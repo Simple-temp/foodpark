@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   useLocation,
+  matchPath,
 } from "react-router-dom";
 import Home from "./components/Home/Home";
 import ContactSection from "./components/ContactSection/ContactSection";
@@ -34,9 +35,13 @@ import Food from "./Admin/Food";
 import Messages from "./Admin/Messages";
 import OurRecepie from "./Admin/OurRecepie";
 import Newsletter from "./Admin/Newsletter";
+import OrderDetails from "./screen/OrderDetails";
+import ShippingAddressAndPayment from "./screen/ShippingAddressAndPayment";
+import FoodById from "./screen/FoodById";
 
 const AppContent = () => {
   const location = useLocation();
+
   const hideHeaderFooterRoutes = [
     "/mydashboard",
     "/mydashboard/myhistory",
@@ -53,10 +58,11 @@ const AppContent = () => {
     "/dashboard/newsletter",
     "/dashboard/recepie",
     "/dashboard/users",
+    // "/orderdetailsbyid/:id", // Dynamic route
   ];
 
-  const shouldHideHeaderFooter = hideHeaderFooterRoutes.includes(
-    location.pathname
+  const shouldHideHeaderFooter = hideHeaderFooterRoutes.some((route) =>
+    matchPath({ path: route, end: false }, location.pathname)
   );
 
   return (
@@ -74,10 +80,13 @@ const AppContent = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/orderdetailsbyid/:id" element={<OrderDetails />} />
+            <Route path="/shippingaddressandpayment" element={<ShippingAddressAndPayment />} />
+            <Route path="/food/:id" element={<FoodById />} />
 
             {/* MyDashboard Nested Routes */}
             <Route path="/mydashboard" element={<MyDashboard />}>
-              <Route index element={<MyHistory />} />
+              <Route index element={<Myprofile />} />
               <Route path="myhistory" element={<MyHistory />} />
               <Route path="myorder" element={<MyOrder />} />
               <Route path="myprofile" element={<Myprofile />} />

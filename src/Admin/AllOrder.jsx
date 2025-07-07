@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -12,8 +12,12 @@ import {
   Button,
   Chip,
   IconButton,
+  Modal,
+  Divider,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
+import PaymentIcon from "@mui/icons-material/Payment";
 
 const AllOrder = () => {
   const [orders, setOrders] = useState([
@@ -69,7 +73,7 @@ const AllOrder = () => {
     },
     {
       id: "006",
-      foodItem: "Grilled Buger",
+      foodItem: "Grilled Burger",
       shippingAddress: "321 Park Blvd",
       paymentMethod: "Cash",
       itemPrice: 120,
@@ -79,8 +83,17 @@ const AllOrder = () => {
     },
   ]);
 
-  const handleSeeDetails = (orderId) => {
-    alert(`Viewing details for order ID: ${orderId}`);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+
+  const handleOpenDetails = (order) => {
+    setSelectedOrder(order);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedOrder(null);
   };
 
   const handleDelete = (orderId) => {
@@ -91,6 +104,7 @@ const AllOrder = () => {
       setOrders((prev) => prev.filter((order) => order.id !== orderId));
     }
   };
+
   return (
     <div>
       <Box>
@@ -124,16 +138,16 @@ const AllOrder = () => {
                   <TableCell>{order.totalPrice}</TableCell>
                   <TableCell>
                     <Chip
-                      label="Pending"
-                      color="error"
+                      label={order.isDelivered ? "Delivered" : "Pending"}
+                      color={order.isDelivered ? "success" : "error"}
                       variant="outlined"
                       size="small"
                     />
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label="Unpaid"
-                      color="error"
+                      label={order.isPaid ? "Paid" : "Unpaid"}
+                      color={order.isPaid ? "success" : "error"}
                       variant="outlined"
                       size="small"
                     />
@@ -143,7 +157,7 @@ const AllOrder = () => {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => handleSeeDetails(order.id)}
+                        onClick={() => handleOpenDetails(order)}
                       >
                         See Details
                       </Button>
@@ -169,6 +183,142 @@ const AllOrder = () => {
           </Table>
         </TableContainer>
       </Box>
+
+      {/* Modal Popup */}
+      <Modal open={openModal} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            width: "1100px",
+            height: "650px",
+            backgroundColor: "#fff",
+            p: 4,
+            borderRadius: 2,
+            boxShadow: 24,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            overflowY: "auto",
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h5">Order Details</Typography>
+            <IconButton onClick={handleCloseModal}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {selectedOrder && (
+            <Box display="flex" gap={4}>
+              {/* Left Side (65%) */}
+              <Box flex={2}>
+                <Typography variant="h6">Order ID: {selectedOrder.id}</Typography>
+                <Typography>
+                  Delivery Status:{" "}
+                  <Chip
+                    label={selectedOrder.isDelivered ? "Delivered" : "Pending"}
+                    color={selectedOrder.isDelivered ? "success" : "error"}
+                    size="small"
+                  />
+                </Typography>
+                <Typography>
+                  Payment Status:{" "}
+                  <Chip
+                    label={selectedOrder.isPaid ? "Paid" : "Unpaid"}
+                    color={selectedOrder.isPaid ? "success" : "error"}
+                    size="small"
+                  />
+                </Typography>
+                <Typography>Payment Method: {selectedOrder.paymentMethod}</Typography>
+                <Typography>Shipping Address: {selectedOrder.shippingAddress}</Typography>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="h6" gutterBottom>
+                  Food Items
+                </Typography>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  {[1, 2, 3].map((_, i) => (
+                    <Box
+                      key={i}
+                      display="flex"
+                      alignItems="center"
+                      gap={2}
+                      borderBottom="1px solid #ccc"
+                      pb={1}
+                    >
+                      <img
+                        src="https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?cs=srgb&dl=pexels-ash-craig-122861-376464.jpg&fm=jpg"
+                        alt="food"
+                        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
+                      />
+                      <Typography flex={1}>Demo Food {i + 1}</Typography>
+                      <Typography>Qty: {i + 1}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+
+              {/* Right Side (35%) */}
+              <Box
+                flex={1}
+                sx={{
+                  backgroundColor: "#f9fafb",
+                  borderRadius: 2,
+                  p: 3,
+                  height: "fit-content",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Payment Summary
+                  </Typography>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography>VAT:</Typography>
+                    <Typography> 10</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography>Tax:</Typography>
+                    <Typography> 15</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography>Delivery:</Typography>
+                    <Typography> 20</Typography>
+                  </Box>
+                  <Divider sx={{ my: 1 }} />
+                  <Box display="flex" justifyContent="space-between" fontWeight="bold">
+                    <Typography>Total:</Typography>
+                    <Typography> {selectedOrder.totalPrice + 10 + 15 + 20}</Typography>
+                  </Box>
+                </Box>
+
+                <Box mt={4}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<PaymentIcon />}
+                    sx={{
+                      borderColor: "#6366f1",
+                      color: "#6366f1",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      "&:hover": {
+                        backgroundColor: "#eef2ff",
+                        borderColor: "#4f46e5",
+                      },
+                    }}
+                  >
+                    Pay with Stripe
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 };

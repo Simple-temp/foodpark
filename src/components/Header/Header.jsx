@@ -4,7 +4,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-
 import {
   AppBar,
   Box,
@@ -15,12 +14,13 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  Modal,
   Stack,
+  TextField,
   Toolbar,
   Typography,
   useTheme,
 } from "@mui/material";
-
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -37,6 +37,9 @@ const menuItems = [
 
 const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,11 +58,15 @@ const Header = () => {
       <AppBar
         position="fixed"
         color="default"
-        sx={{ zIndex: theme.zIndex.drawer - 10, px: 2, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+        sx={{
+          zIndex: theme.zIndex.drawer - 10,
+          px: 2,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
           {/* Logo */}
-          <Box component={Link} to="/" sx={{ display: "flex", alignItems: "center", zIndex:"-1000" }}>
+          <Box component={Link} to="/" sx={{ display: "flex", alignItems: "center" }}>
             <img
               src="https://cdn-icons-png.flaticon.com/512/2965/2965567.png"
               alt="Logo"
@@ -68,12 +75,15 @@ const Header = () => {
             />
           </Box>
 
-          {/* Contact info, hidden on small screens */}
+          {/* Contact info */}
           <Stack
             direction="row"
             spacing={3}
             alignItems="center"
-            sx={{ display: { xs: "none", md: "flex" }, color: theme.palette.primary.main }}
+            sx={{
+              display: { xs: "none", md: "flex" },
+              color: theme.palette.primary.main,
+            }}
           >
             <Box display="flex" alignItems="center">
               <PhoneIcon sx={{ mr: 0.5 }} />
@@ -91,9 +101,14 @@ const Header = () => {
             </Box>
           </Stack>
 
-          {/* Right Buttons */}
+          {/* Buttons */}
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button variant="contained" color="primary" size="small">
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={() => setLoginOpen(true)}
+            >
               Login
             </Button>
 
@@ -102,16 +117,16 @@ const Header = () => {
               color="primary"
               size="small"
               sx={{ minWidth: 120 }}
+              onClick={() => setRegisterOpen(true)}
             >
               Register
             </Button>
 
-            {/* Cart Icon (just icon button) */}
-            <IconButton color="primary" aria-label="cart" sx={{ ml: 1 }}>
+            <Link to="/cart">
+                        <IconButton color="primary" aria-label="cart" sx={{ ml: 1 }}>
               <ShoppingCartIcon />
-            </IconButton>
+            </IconButton></Link>
 
-            {/* Menu Icon Button */}
             <IconButton
               color="primary"
               aria-label="menu"
@@ -130,10 +145,14 @@ const Header = () => {
         open={drawerOpen}
         onClose={toggleDrawer(false)}
         PaperProps={{
-          sx: { width: 280, display: "flex", flexDirection: "column", height: "100vh" },
+          sx: {
+            width: 280,
+            display: "flex",
+            flexDirection: "column",
+            height: "100vh",
+          },
         }}
       >
-        {/* Drawer Header with close button */}
         <Box
           sx={{
             display: "flex",
@@ -155,12 +174,11 @@ const Header = () => {
               width={50}
             />
           </Box>
-          <IconButton onClick={toggleDrawer(false)} aria-label="close menu">
+          <IconButton onClick={toggleDrawer(false)}>
             <CloseIcon />
           </IconButton>
         </Box>
 
-        {/* Menu items */}
         <List sx={{ flexGrow: 1, overflowY: "auto" }}>
           {menuItems.map(({ text, path }) => (
             <ListItemButton
@@ -179,13 +197,95 @@ const Header = () => {
           ))}
         </List>
 
-        {/* Footer */}
         <Box sx={{ p: 2, borderTop: "1px solid #ddd" }}>
           <Typography variant="body2" color="text.secondary" align="center">
             &copy; 2025 Your Company
           </Typography>
         </Box>
       </Drawer>
+
+      {/* Login Modal */}
+      <Modal open={loginOpen} onClose={() => setLoginOpen(false)}>
+        <Box
+          sx={{
+            width: 400,
+            p: 4,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <Typography variant="h6" mb={2}>
+            Login
+          </Typography>
+          <Stack spacing={2}>
+            <TextField fullWidth label="Email" variant="outlined" />
+            <TextField fullWidth label="Password" type="password" variant="outlined" />
+            <Button
+              variant="outlined"
+              fullWidth
+              sx={{
+                color: "#1976d2",
+                borderColor: "#1976d2",
+                fontWeight: "bold",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "#e3f2fd",
+                  borderColor: "#1976d2",
+                },
+              }}
+            >
+              Login
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+
+      {/* Register Modal */}
+      <Modal open={registerOpen} onClose={() => setRegisterOpen(false)}>
+        <Box
+          sx={{
+            width: 400,
+            p: 4,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <Typography variant="h6" mb={2}>
+            Register
+          </Typography>
+          <Stack spacing={2}>
+            <TextField fullWidth label="Name" variant="outlined" />
+            <TextField fullWidth label="Email" variant="outlined" />
+            <TextField fullWidth label="Password" type="password" variant="outlined" />
+            <Button
+              variant="outlined"
+              fullWidth
+              sx={{
+                color: "#1976d2",
+                borderColor: "#1976d2",
+                fontWeight: "bold",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "#e3f2fd",
+                  borderColor: "#1976d2",
+                },
+              }}
+            >
+              Register
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
     </>
   );
 };

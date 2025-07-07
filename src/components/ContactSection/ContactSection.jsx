@@ -37,7 +37,7 @@ const ContactSection = () => {
                 multiline
                 rows={4}
               />
-              <Button variant="contained" color="primary" sx={{ mt: 2 }} className="button-color">
+              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
                 Submit
               </Button>
               <Box mt={3}>
