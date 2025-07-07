@@ -1,0 +1,65 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.button-color{
+    background-color: #0f172a !important;
+}
+.button-color-outline{
+    border: 1px solid #0f172a !important;
+    color: #0f172a !important;
+    background-color: transparent !important;
+}
+.text-color{
+    color: #0f172a !important;
+}
+.header-title-color{
+    color: #0f172a !important;
+    font-size:38px !important;
+    font-weight: 700 !important;
+    margin-bottom: 30px !important;
+}
+.header-title-color-h4{
+    color: #0f172a !important;
+    font-size:32px !important;
+    font-weight: 600 !important;
+}
+
+body{
+    background-color: #fefefe;
+}
+.container-width{
+    width: 1250px !important;
+    margin: auto;
+}
+.earch-container{
+    padding: 80px 0;
+    height: auto;
+    width: 1250px !important;
+    margin: auto;
+}
+main{
+  flex: 1;
+}
+.inner-container
+{
+  min-height: 100vh;
+  transition: 0.4s;
+  -webkit-transition: 0.4s;
+  -moz-transition: 0.4s;
+  -ms-transition: 0.4s;
+  -o-transition: 0.4s;
+}
+.d-flex{
+    display: flex;
+    flex-direction: column;
+}
+.css-16tnfe6-MuiGrid-root {
+    --Grid-columnSpacing: 15px !important;
+    --Grid-rowSpacing: 15px !important;
+}
+/* ======================================================================================================= */
+
+
+
