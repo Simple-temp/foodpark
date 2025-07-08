@@ -40,7 +40,8 @@ const Dashboard = () => {
         <NavLink to="/dashboard/food">Food</NavLink>
         <NavLink to="/dashboard/messages">Messages</NavLink>
         <NavLink to="/dashboard/newsletter">NewsLetter</NavLink>
-        {/* <NavLink to="/dashboard/recepie">Our Recepie</NavLink> */}
+        <NavLink to="/dashboard/slides">Slides</NavLink>
+        <NavLink to="/dashboard/cupons">Cupons</NavLink>
         <NavLink to="/dashboard/users">User</NavLink>
         <NavLink to="/">Log out</NavLink>
       </Box>

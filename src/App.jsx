@@ -38,6 +38,9 @@ import Newsletter from "./Admin/Newsletter";
 import OrderDetails from "./screen/OrderDetails";
 import ShippingAddressAndPayment from "./screen/ShippingAddressAndPayment";
 import FoodById from "./screen/FoodById";
+import Cupons from "./Admin/Cupons";
+import Slides from "./Admin/Slides";
+import ProtectedRoute from "./ProtectedRoute";
 
 const AppContent = () => {
   const location = useLocation();
@@ -59,6 +62,8 @@ const AppContent = () => {
     "/dashboard/recepie",
     "/dashboard/users",
     // "/orderdetailsbyid/:id", // Dynamic route
+    "/dashboard/users",
+    "/dashboard/cupons",
   ];
 
   const shouldHideHeaderFooter = hideHeaderFooterRoutes.some((route) =>
@@ -80,30 +85,39 @@ const AppContent = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/orderdetailsbyid/:id" element={<OrderDetails />} />
-            <Route path="/shippingaddressandpayment" element={<ShippingAddressAndPayment />} />
             <Route path="/food/:id" element={<FoodById />} />
+            <Route path="/orderdetailsbyid/:id" element={<OrderDetails />} />
 
-            {/* MyDashboard Nested Routes */}
-            <Route path="/mydashboard" element={<MyDashboard />}>
-              <Route index element={<Myprofile />} />
-              <Route path="myhistory" element={<MyHistory />} />
-              <Route path="myorder" element={<MyOrder />} />
-              <Route path="myprofile" element={<Myprofile />} />
-              <Route path="mysetting" element={<MySettings />} />
-            </Route>
+            {/* Protected routes */}
 
-            {/* Admin Dashboard Nested Routes */}
-            <Route path="/dashboard" element={<Dashboard />}>
-              <Route index element={<AdminAccount />} />
-              <Route path="allorder" element={<AllOrder />} />
-              <Route path="blog" element={<Blog />} />
-              <Route path="feedback" element={<ClientFeedback />} />
-              <Route path="food" element={<Food />} />
-              <Route path="messages" element={<Messages />} />
-              <Route path="newsletter" element={<Newsletter />} />
-              <Route path="recepie" element={<OurRecepie />} />
-              <Route path="users" element={<Users />} />
+            <Route element={<ProtectedRoute />}>
+              <Route
+                path="/shippingaddressandpayment"
+                element={<ShippingAddressAndPayment />}
+              />
+              {/* MyDashboard Nested Routes */}
+              <Route path="/mydashboard" element={<MyDashboard />}>
+                <Route index element={<Myprofile />} />
+                <Route path="myhistory" element={<MyHistory />} />
+                <Route path="myorder" element={<MyOrder />} />
+                <Route path="myprofile" element={<Myprofile />} />
+                <Route path="mysetting" element={<MySettings />} />
+              </Route>
+
+              {/* Admin Dashboard Nested Routes */}
+              <Route path="/dashboard" element={<Dashboard />}>
+                <Route index element={<AdminAccount />} />
+                <Route path="allorder" element={<AllOrder />} />
+                <Route path="blog" element={<Blog />} />
+                <Route path="feedback" element={<ClientFeedback />} />
+                <Route path="food" element={<Food />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="newsletter" element={<Newsletter />} />
+                <Route path="recepie" element={<OurRecepie />} />
+                <Route path="users" element={<Users />} />
+                <Route path="cupons" element={<Cupons />} />
+                <Route path="slides" element={<Slides />} />
+              </Route>
             </Route>
 
             <Route path="/*" element={<NotFound />} />

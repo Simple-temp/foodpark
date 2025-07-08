@@ -26,16 +26,26 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Badge from "@mui/material/Badge";
 import { useSelector } from "react-redux";
 
+const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
 const menuItems = [
   { text: "Home", path: "/" },
-  { text: "MyDashboard", path: "/mydashboard" },
-  { text: "AdminDashboard", path: "/dashboard" },
   { text: "Our Recipes", path: "/our-recipes" },
   { text: "About Us", path: "/about-us" },
   { text: "Blog", path: "/blog" },
   { text: "Client Feedback", path: "/client-feedback" },
   { text: "Contact", path: "/contact" },
 ];
+
+// Dynamically add dashboard items
+if (userInfo) {
+  menuItems.splice(1, 0, { text: "Account", path: "/mydashboard" });
+
+  if (userInfo.isAdmin) {
+    menuItems.splice(2, 0, { text: "Admin", path: "/dashboard" });
+  }
+}
+
 
 const Header = () => {
   const itemCount = useSelector((state) =>
@@ -46,8 +56,6 @@ const Header = () => {
   );
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [registerOpen, setRegisterOpen] = useState(false);
 
   const theme = useTheme();
   const location = useLocation();
@@ -124,24 +132,28 @@ const Header = () => {
 
           {/* Buttons */}
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              onClick={() => setLoginOpen(true)}
-            >
-              Login
-            </Button>
+            {userInfo ? (
+              <Typography variant="h6">{userInfo.name}</Typography>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="contained" color="primary" size="small">
+                    Login
+                  </Button>
+                </Link>
 
-            <Button
-              variant="outlined"
-              color="primary"
-              size="small"
-              sx={{ minWidth: 120 }}
-              onClick={() => setRegisterOpen(true)}
-            >
-              Register
-            </Button>
+                <Link to="/register">
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    sx={{ minWidth: 120 }}
+                  >
+                    Register
+                  </Button>
+                </Link>
+              </>
+            )}
 
             <Link to="/cart">
               <IconButton color="primary" aria-label="cart" sx={{ ml: 1 }}>
@@ -235,99 +247,6 @@ const Header = () => {
           </Typography>
         </Box>
       </Drawer>
-
-      {/* Login Modal */}
-      <Modal open={loginOpen} onClose={() => setLoginOpen(false)}>
-        <Box
-          sx={{
-            width: 400,
-            p: 4,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <Typography variant="h6" mb={2}>
-            Login
-          </Typography>
-          <Stack spacing={2}>
-            <TextField fullWidth label="Email" variant="outlined" />
-            <TextField
-              fullWidth
-              label="Password"
-              type="password"
-              variant="outlined"
-            />
-            <Button
-              variant="outlined"
-              fullWidth
-              sx={{
-                color: "#1976d2",
-                borderColor: "#1976d2",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "#e3f2fd",
-                  borderColor: "#1976d2",
-                },
-              }}
-            >
-              Login
-            </Button>
-          </Stack>
-        </Box>
-      </Modal>
-
-      {/* Register Modal */}
-      <Modal open={registerOpen} onClose={() => setRegisterOpen(false)}>
-        <Box
-          sx={{
-            width: 400,
-            p: 4,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <Typography variant="h6" mb={2}>
-            Register
-          </Typography>
-          <Stack spacing={2}>
-            <TextField fullWidth label="Name" variant="outlined" />
-            <TextField fullWidth label="Email" variant="outlined" />
-            <TextField
-              fullWidth
-              label="Password"
-              type="password"
-              variant="outlined"
-            />
-            <Button
-              variant="outlined"
-              fullWidth
-              sx={{
-                color: "#1976d2",
-                borderColor: "#1976d2",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "#e3f2fd",
-                  borderColor: "#1976d2",
-                },
-              }}
-            >
-              Register
-            </Button>
-          </Stack>
-        </Box>
-      </Modal>
     </>
   );
 };

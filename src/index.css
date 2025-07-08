@@ -59,7 +59,7 @@ main{
     --Grid-columnSpacing: 15px !important;
     --Grid-rowSpacing: 15px !important;
 }
-.for-cart{
+.for-cart,.inner-order-details{
     padding: 30px 0;
 }
 /* ======================================================================================================= */
