@@ -23,6 +23,8 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Badge from "@mui/material/Badge";
+import { useSelector } from "react-redux";
 
 const menuItems = [
   { text: "Home", path: "/" },
@@ -36,6 +38,13 @@ const menuItems = [
 ];
 
 const Header = () => {
+  const itemCount = useSelector((state) =>
+    state.cartState.cart.fooditem.reduce(
+      (total, item) => total + item.quantity,
+      0
+    )
+  );
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
@@ -66,7 +75,11 @@ const Header = () => {
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
           {/* Logo */}
-          <Box component={Link} to="/" sx={{ display: "flex", alignItems: "center" }}>
+          <Box
+            component={Link}
+            to="/"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
             <img
               src="https://cdn-icons-png.flaticon.com/512/2965/2965567.png"
               alt="Logo"
@@ -89,12 +102,20 @@ const Header = () => {
               <PhoneIcon sx={{ mr: 0.5 }} />
               <Typography variant="body2">987-654-3210</Typography>
             </Box>
-            <Divider orientation="vertical" flexItem sx={{ borderColor: "lightgray" }} />
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ borderColor: "lightgray" }}
+            />
             <Box display="flex" alignItems="center">
               <EmailIcon sx={{ mr: 0.5 }} />
               <Typography variant="body2">demo@gmail.com</Typography>
             </Box>
-            <Divider orientation="vertical" flexItem sx={{ borderColor: "lightgray" }} />
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ borderColor: "lightgray" }}
+            />
             <Box display="flex" alignItems="center">
               <LocationOnIcon sx={{ mr: 0.5 }} />
               <Typography variant="body2">104 New York, USA</Typography>
@@ -123,9 +144,20 @@ const Header = () => {
             </Button>
 
             <Link to="/cart">
-                        <IconButton color="primary" aria-label="cart" sx={{ ml: 1 }}>
-              <ShoppingCartIcon />
-            </IconButton></Link>
+              <IconButton color="primary" aria-label="cart" sx={{ ml: 1 }}>
+                <Badge
+                  badgeContent={itemCount}
+                  color="secondary"
+                  overlap="circular"
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                >
+                  <ShoppingCartIcon />
+                </Badge>
+              </IconButton>
+            </Link>
 
             <IconButton
               color="primary"
@@ -224,7 +256,12 @@ const Header = () => {
           </Typography>
           <Stack spacing={2}>
             <TextField fullWidth label="Email" variant="outlined" />
-            <TextField fullWidth label="Password" type="password" variant="outlined" />
+            <TextField
+              fullWidth
+              label="Password"
+              type="password"
+              variant="outlined"
+            />
             <Button
               variant="outlined"
               fullWidth
@@ -266,7 +303,12 @@ const Header = () => {
           <Stack spacing={2}>
             <TextField fullWidth label="Name" variant="outlined" />
             <TextField fullWidth label="Email" variant="outlined" />
-            <TextField fullWidth label="Password" type="password" variant="outlined" />
+            <TextField
+              fullWidth
+              label="Password"
+              type="password"
+              variant="outlined"
+            />
             <Button
               variant="outlined"
               fullWidth

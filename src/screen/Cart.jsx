@@ -1,55 +1,43 @@
-import React, { useState } from "react";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Typography, IconButton, Button, Divider, TextField } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  Divider,
+  TextField,
+} from "@mui/material";
 import { Link } from "react-router-dom";
 
 const Cart = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "Chicken Biryani",
-      price: 250,
-      quantity: 1,
-      image:
-        "https://www.cubesnjuliennes.com/wp-content/uploads/2020/07/Chicken-Biryani-Recipe.jpg",
-    },
-    {
-      id: 2,
-      name: "Beef Burger",
-      price: 180,
-      quantity: 2,
-      image:
-        "https://www.andy-cooks.com/cdn/shop/articles/20240831035110-andy-20cooks-20-20juicy-20beef-20burger-20recipe.jpg?v=1725428158",
-    },
-  ]);
+  const dispatch = useDispatch();
+  const items = useSelector((state) => state.cartState.cart.fooditem || []);
+  console.log(items)
 
-  const handleIncrease = (id) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  const handleIncrease = (index) => {
+    dispatch({ type: "INCREASE", payload: index });
   };
 
-  const handleDecrease = (id) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+  const handleDecrease = (index) => {
+    dispatch({ type: "DECREASE", payload: index });
+  };
+
+  const handleRemove = (index) => {
+    dispatch({ type: "REMOVE_CART_ITEM", payload: index });
   };
 
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const vat = 10;
-  const tax = 15;
-  const delivery = 20;
-  const total = subtotal + vat + tax + delivery;
+  const vat = parseFloat((subtotal * 0.05).toFixed(2));
+  const tax = parseFloat((subtotal * 0.10).toFixed(2));
+  const delivery = parseFloat((subtotal * 0.07).toFixed(2));
+  const total = (subtotal + vat + tax + delivery).toFixed(2);
 
   return (
     <div className="container-width">
@@ -67,46 +55,59 @@ const Cart = () => {
               Your Cart
             </Typography>
 
-            {items.map((item) => (
-              <Box
-                key={item.id}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  mb: 2,
-                  border: "1px solid #eee",
-                  borderRadius: 2,
-                  p: 2,
-                }}
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                    marginRight: 16,
+            {items.length === 0 ? (
+              <Typography>No items in the cart.</Typography>
+            ) : (
+              items.map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mb: 2,
+                    border: "1px solid #eee",
+                    borderRadius: 2,
+                    p: 2,
                   }}
-                />
-                <Box flex={1}>
-                  <Typography fontWeight="bold">{item.name}</Typography>
-                </Box>
-                <Box display="flex" alignItems="center">
-                  <IconButton onClick={() => handleDecrease(item.id)}>
-                    <RemoveIcon />
+                >
+                  <img
+                    src={item.img}
+                    alt={item.name}
+                    style={{
+                      width: 80,
+                      height: 80,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                      marginRight: 16,
+                    }}
+                  />
+                  <Box flex={1}>
+                    <Typography fontWeight="bold">{item.name}</Typography>
+                    <Typography color="text.secondary">
+                       {item.price}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center">
+                    <IconButton onClick={() => handleDecrease(index)}>
+                      <RemoveIcon />
+                    </IconButton>
+                    <Typography px={1}>{item.quantity}</Typography>
+                    <IconButton onClick={() => handleIncrease(index)}>
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
+                  <Typography width={100} textAlign="right" fontWeight="bold">
+                     {item.price * item.quantity}
+                  </Typography>
+                  <IconButton
+                    onClick={() => handleRemove(index)}
+                    sx={{ ml: 1 }}
+                  >
+                    <DeleteIcon color="error" />
                   </IconButton>
-                  <Typography px={1}>{item.quantity}</Typography>
-                  <IconButton onClick={() => handleIncrease(item.id)}>
-                    <AddIcon />
-                  </IconButton>
                 </Box>
-                <Typography width={100} textAlign="right">
-                  {item.price * item.quantity}
-                </Typography>
-              </Box>
-            ))}
+              ))
+            )}
           </Box>
 
           {/* Right Side */}
@@ -125,21 +126,21 @@ const Cart = () => {
 
             <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Subtotal:</Typography>
-              <Typography> {subtotal}</Typography>
+              <Typography>{subtotal.toFixed(2)}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>VAT:</Typography>
+              <Typography>VAT (5%):</Typography>
               <Typography> {vat}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>Tax:</Typography>
-              <Typography> {tax}</Typography>
+              <Typography>Tax (5%):</Typography>
+              <Typography>{tax}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography>Delivery:</Typography>
+              <Typography>Delivery (5%):</Typography>
               <Typography> {delivery}</Typography>
             </Box>
-            {/* Coupon Input and Button */}
+
             <Box display="flex" gap={1} mb={2}>
               <TextField
                 variant="outlined"
@@ -162,7 +163,9 @@ const Cart = () => {
                 Apply Coupon
               </Button>
             </Box>
+
             <Divider sx={{ my: 1 }} />
+
             <Box
               display="flex"
               justifyContent="space-between"
