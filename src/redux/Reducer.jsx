@@ -112,6 +112,22 @@ const reducer = (state = initialState, action) => {
       };
     }
 
+    case "LOGOUT_USER": {
+      localStorage.removeItem("userInfo");
+      // Optional: clear cart too
+      const clearedCart = {
+        fooditem: [],
+        shippingAddress: {},
+        paymentMethod: "",
+      };
+      saveCartToStorage(clearedCart);
+
+      return {
+        ...state,
+        cart: clearedCart,
+      };
+    }
+
     default:
       return state;
   }
@@ -120,4 +136,3 @@ const reducer = (state = initialState, action) => {
 export default reducer;
 
 //dispatch({ type: "CLEAR_FOODITEM" });
-

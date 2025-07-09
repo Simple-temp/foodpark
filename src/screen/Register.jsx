@@ -19,7 +19,6 @@ import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-
 const Register = () => {
   const navigate = useNavigate();
 
@@ -53,6 +52,7 @@ const Register = () => {
       localStorage.setItem("userInfo", JSON.stringify(data)); // ✅ Save user data to localStorage
       toast.success("Registration successful!");
       navigate("/");
+      window.location.reload();
 
       // Reset form
       setForm({ name: "", email: "", password: "" });

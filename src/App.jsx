@@ -41,6 +41,7 @@ import FoodById from "./screen/FoodById";
 import Cupons from "./Admin/Cupons";
 import Slides from "./Admin/Slides";
 import ProtectedRoute from "./ProtectedRoute";
+import OrderDetailsById from "./screen/OrderDetailsById";
 
 const AppContent = () => {
   const location = useLocation();
@@ -86,7 +87,8 @@ const AppContent = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/food/:id" element={<FoodById />} />
-            <Route path="/orderdetailsbyid/:id" element={<OrderDetails />} />
+            <Route path="/orderdetailsbyid/:id" element={<OrderDetailsById />} />
+            <Route path="/orderdetails" element={<OrderDetails />} />
 
             {/* Protected routes */}
 

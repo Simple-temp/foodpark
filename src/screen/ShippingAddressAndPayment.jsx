@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -8,18 +8,41 @@ import {
   Button,
   Divider,
 } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 const ShippingAddressAndPayment = () => {
   const dispatch = useDispatch();
-  const [stripeChecked, setStripeChecked] = useState(true); // default checked
+
+  const savedAddress = useSelector(
+    (state) => state.cartState.cart.shippingAddress
+  );
+  const savedPayment = useSelector(
+    (state) => state.cartState.cart.paymentMethod
+  );
+
+  // Form states
   const [address, setAddress] = useState("");
   const [postCode, setPostCode] = useState("");
   const [roadNo, setRoadNo] = useState("");
   const [houseNo, setHouseNo] = useState("");
+  const [stripeChecked, setStripeChecked] = useState(true); // default
+
+  // 🟢 Prefill existing data from redux
+  useEffect(() => {
+    if (savedAddress) {
+      setAddress(savedAddress.address || "");
+      setPostCode(savedAddress.postCode || "");
+      setRoadNo(savedAddress.roadNo || "");
+      setHouseNo(savedAddress.houseNo || "");
+    }
+
+    if (savedPayment) {
+      setStripeChecked(savedPayment === "Stripe");
+    }
+  }, [savedAddress, savedPayment]);
 
   const handleOrder = () => {
-    // Save shipping address to redux
     dispatch({
       type: "ADD_SHIPPING_ADDRESS",
       payload: {
@@ -30,13 +53,10 @@ const ShippingAddressAndPayment = () => {
       },
     });
 
-    // Save payment method to redux
     dispatch({
       type: "ADD_PAYMENT_METHOD",
       payload: stripeChecked ? "Stripe" : "",
     });
-
-    alert("Order placed successfully!"); // Replace with real logic later
   };
 
   return (
@@ -148,23 +168,25 @@ const ShippingAddressAndPayment = () => {
               }}
             />
 
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={handleOrder}
-              sx={{
-                color: "#4f46e5",
-                borderColor: "#4f46e5",
-                fontWeight: "bold",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "#eef2ff",
+            <Link to="/orderdetails">
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={handleOrder}
+                sx={{
+                  color: "#4f46e5",
                   borderColor: "#4f46e5",
-                },
-              }}
-            >
-              Order Now
-            </Button>
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "#eef2ff",
+                    borderColor: "#4f46e5",
+                  },
+                }}
+              >
+                Order Now
+              </Button>
+            </Link>
           </Box>
         </Box>
       </Box>

@@ -133,7 +133,7 @@ const Header = () => {
           {/* Buttons */}
           <Stack direction="row" spacing={1} alignItems="center">
             {userInfo ? (
-              <Typography variant="h6">{userInfo.name}</Typography>
+              <h4 className="account-name">{userInfo.name}</h4>
             ) : (
               <>
                 <Link to="/login">

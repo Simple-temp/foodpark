@@ -64,5 +64,12 @@ main{
 }
 /* ======================================================================================================= */
 
-
+.account-name{
+    color: #002c9390;
+    font-weight: 800;
+    font-size:18px;
+    border:1px solid #002c9390;
+    padding: 2px 4px;
+    cursor: pointer;
+}
 

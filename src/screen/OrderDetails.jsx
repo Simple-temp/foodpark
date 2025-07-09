@@ -1,44 +1,33 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Divider,
-  Button,
-  Chip,
-} from "@mui/material";
+import React from "react";
+import { Box, Typography, Divider, Button, Paper } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
-
-// Dummy Orders
-const dummyOrders = [
-  {
-    id: "1",
-    isDelivered: false,
-    isPaid: false,
-    paymentMethod: "Stripe",
-    shippingAddress: "123 Main Street, City",
-    totalPrice: 200,
-  },
-  {
-    id: "2",
-    isDelivered: false,
-    isPaid: false,
-    paymentMethod: "Cash on Delivery",
-    shippingAddress: "456 Side Street, City",
-    totalPrice: 150,
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const OrderDetails = () => {
-  const { id } = useParams(); // get ID from URL
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
+  const fooditems = useSelector((state) => state.cartState.cart.fooditem || []);
+  const shippingaddress = useSelector(
+    (state) => state.cartState.cart.shippingAddress || {}
+  );
+  const paymentmethod = useSelector(
+    (state) => state.cartState.cart.paymentMethod || ""
+  );
 
-  useEffect(() => {
-    const foundOrder = dummyOrders.find((order) => order.id === id);
-    setSelectedOrder(foundOrder);
-  }, [id]);
+  const subtotal = fooditems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
 
-  if (!selectedOrder) {
+  const VAT = 10;
+  const TAX = 15;
+  const DELIVERY = 20;
+  const total = subtotal + VAT + TAX + DELIVERY;
+
+  if (!fooditems.length) {
     return (
       <Box p={4}>
         <Typography variant="h6" color="error">
@@ -50,42 +39,61 @@ const OrderDetails = () => {
 
   return (
     <div className="container-width inner-order-details">
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Order Details</Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Typography variant="h5" fontWeight="bold">
+          Order Details
+        </Typography>
       </Box>
 
-      <Box display="flex" gap={4}>
+      <Box display="flex" gap={4} flexWrap="wrap">
         {/* Left Side */}
-        <Box flex={2}>
-          <Typography variant="h6">Order ID: {selectedOrder.id}</Typography>
-          <Typography>
-            Delivery Status:{" "}
-            <Chip
-              label={selectedOrder.isDelivered ? "Delivered" : "Pending"}
-              color={selectedOrder.isDelivered ? "success" : "error"}
-              size="small"
-            />
-          </Typography>
-          <Typography>
-            Payment Status:{" "}
-            <Chip
-              label={selectedOrder.isPaid ? "Paid" : "Unpaid"}
-              color={selectedOrder.isPaid ? "success" : "error"}
-              size="small"
-            />
-          </Typography>
-          <Typography>Payment Method: {selectedOrder.paymentMethod}</Typography>
-          <Typography>Shipping Address: {selectedOrder.shippingAddress}</Typography>
+        <Box flex={2} minWidth={300}>
+          <Paper
+            elevation={3}
+            sx={{ p: 3, borderRadius: 2, backgroundColor: "transparent" }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Customer Details
+            </Typography>
+            <Typography>Name: {userInfo.name || "N/A"}</Typography>
+            <Typography>Email: {userInfo.email || "N/A"}</Typography>
 
-          <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="h6" gutterBottom>
+              Shipping Address
+            </Typography>
+            <Typography>Address: {shippingaddress.address || "N/A"}</Typography>
+            <Typography>Road No: {shippingaddress.roadNo || "N/A"}</Typography>
+            <Typography>
+              House No: {shippingaddress.houseNo || "N/A"}
+            </Typography>
+            <Typography>
+              Post Code: {shippingaddress.postCode || "N/A"}
+            </Typography>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="h6" gutterBottom>
+              Payment Method
+            </Typography>
+            <Typography>{paymentmethod || "N/A"}</Typography>
+          </Paper>
+
+          <Divider sx={{ my: 3 }} />
 
           <Typography variant="h6" gutterBottom>
             Food Items
           </Typography>
           <Box display="flex" flexDirection="column" gap={2}>
-            {[1, 2, 3].map((_, i) => (
+            {fooditems.map((item, index) => (
               <Box
-                key={i}
+                key={index}
                 display="flex"
                 alignItems="center"
                 gap={2}
@@ -93,8 +101,8 @@ const OrderDetails = () => {
                 pb={1}
               >
                 <img
-                  src="https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg"
-                  alt="food"
+                  src={item.img}
+                  alt={item.name}
                   style={{
                     width: 80,
                     height: 80,
@@ -102,8 +110,9 @@ const OrderDetails = () => {
                     borderRadius: 8,
                   }}
                 />
-                <Typography flex={1}>Demo Food {i + 1}</Typography>
-                <Typography>Qty: {i + 1}</Typography>
+                <Typography flex={1}>{item.name}</Typography>
+                <Typography>Qty: {item.quantity}</Typography>
+                <Typography> {item.price * item.quantity}</Typography>
               </Box>
             ))}
           </Box>
@@ -116,6 +125,7 @@ const OrderDetails = () => {
             backgroundColor: "#f9fafb",
             borderRadius: 2,
             p: 3,
+            minWidth: 280,
             height: "fit-content",
             display: "flex",
             flexDirection: "column",
@@ -127,21 +137,29 @@ const OrderDetails = () => {
               Payment Summary
             </Typography>
             <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography>Subtotal:</Typography>
+              <Typography>{subtotal}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>VAT:</Typography>
-              <Typography>10</Typography>
+              <Typography>{VAT}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Tax:</Typography>
-              <Typography>15</Typography>
+              <Typography> {TAX}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Delivery:</Typography>
-              <Typography>20</Typography>
+              <Typography> {DELIVERY}</Typography>
             </Box>
             <Divider sx={{ my: 1 }} />
-            <Box display="flex" justifyContent="space-between" fontWeight="bold">
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              fontWeight="bold"
+            >
               <Typography>Total:</Typography>
-              <Typography>{selectedOrder.totalPrice + 10 + 15 + 20}</Typography>
+              <Typography> {total}</Typography>
             </Box>
           </Box>
 
@@ -150,6 +168,49 @@ const OrderDetails = () => {
               fullWidth
               variant="outlined"
               startIcon={<PaymentIcon />}
+              onClick={async () => {
+                try {
+                  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+                  const token = userInfo?.token;
+
+                  const config = {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  };
+
+                  const orderData = {
+                    foodItem: fooditems,
+                    shippingAddress: {
+                      address: shippingaddress.address,
+                      postCode: shippingaddress.postCode,
+                      roadNo: shippingaddress.roadNo,
+                      houseNo: shippingaddress.houseNo,
+                    },
+                    paymentMethod: paymentmethod,
+                    itemPrice: subtotal,
+                    totalPrice: total,
+                  };
+
+                  const response = await axios.post(
+                    "http://localhost:3000/api/order/neworder",
+                    orderData,
+                    config
+                  );
+
+                  const orderId = response.data._id;
+
+                  // Clear fooditems from Redux and localStorage
+                  dispatch({ type: "CLEAR_FOODITEM" });
+                  localStorage.removeItem("cart");
+
+                  // Redirect to dynamic route
+                  navigate(`/orderdetailsbyid/${orderId}`);
+                } catch (error) {
+                  console.error("Order creation failed:", error);
+                  alert("Failed to create order");
+                }
+              }}
               sx={{
                 borderColor: "#6366f1",
                 color: "#6366f1",
@@ -161,7 +222,7 @@ const OrderDetails = () => {
                 },
               }}
             >
-              Pay with Stripe
+              Continue
             </Button>
           </Box>
         </Box>
