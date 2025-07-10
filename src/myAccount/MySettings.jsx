@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -8,35 +9,74 @@ import {
   TextField,
   Button,
   Paper,
-} from '@mui/material';
+} from "@mui/material";
+import { toast, ToastContainer } from "react-toastify";
 
 const MySettings = () => {
-  const [reason, setReason] = useState('');
-  const [otherReason, setOtherReason] = useState('');
+  const [reason, setReason] = useState("");
+  const [otherReason, setOtherReason] = useState("");
+  const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
 
   const reasons = [
-    'Privacy concerns',
-    'Found a better service',
-    'Too many emails',
-    'Technical issues',
-    'Other',
+    "Privacy concerns",
+    "Found a better service",
+    "Too many emails",
+    "Technical issues",
+    "Other",
   ];
 
   const handleReasonChange = (event) => {
     setReason(event.target.value);
-    if (event.target.value !== 'Other') {
-      setOtherReason('');
+    if (event.target.value !== "Other") {
+      setOtherReason("");
     }
   };
 
-  const handleDelete = () => {
-    const finalReason = reason === 'Other' ? otherReason : reason;
+  const handleDelete = async () => {
+    const finalReason = reason === "Other" ? otherReason : reason;
+
     if (!finalReason) {
-      alert('Please select or enter a reason for account deletion.');
+      toast.error("Please select or enter a reason for account deletion.");
       return;
     }
-    // Implement deletion logic here
-    alert(`Account deletion requested.\nReason: ${finalReason}`);
+
+    try {
+      // Step 1: Get user orders
+      const orderRes = await axios.get(
+        "http://localhost:3000/api/order/getorders/my",
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
+
+      if (orderRes.data.length > 0) {
+        toast.error("You must delete all your orders before deleting your account.");
+        return;
+      }
+
+      // Step 2: Delete account
+      const deleteRes = await axios.delete(
+        `http://localhost:3000/api/user/userbyid/${userInfo._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
+
+      if (deleteRes.status === 200) {
+        localStorage.removeItem("userInfo");
+        alert("Account deleted successfully.");
+        window.location.href = "/"; // redirect to home
+      } else {
+        alert("Failed to delete account.");
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert("An error occurred while deleting the account.");
+    }
   };
 
   return (
@@ -45,6 +85,8 @@ const MySettings = () => {
         Account Deletion
       </Typography>
 
+       <ToastContainer position="top-right" autoClose={3000} />
+
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="body1" mb={2}>
           Please tell us why you want to delete your account:
@@ -52,16 +94,11 @@ const MySettings = () => {
 
         <RadioGroup value={reason} onChange={handleReasonChange}>
           {reasons.map((r) => (
-            <FormControlLabel
-              key={r}
-              value={r}
-              control={<Radio />}
-              label={r}
-            />
+            <FormControlLabel key={r} value={r} control={<Radio />} label={r} />
           ))}
         </RadioGroup>
 
-        {reason === 'Other' && (
+        {reason === "Other" && (
           <TextField
             fullWidth
             label="Please specify"

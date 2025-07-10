@@ -47,11 +47,15 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:3000/api/user/login", form);
+      const response = await axios.post(
+        "http://localhost:3000/api/user/login",
+        form
+      );
 
       if (response.data) {
         localStorage.setItem("userInfo", JSON.stringify(response.data));
         navigate("/"); // or wherever you want
+        window.location.reload();
       }
     } catch (err) {
       console.error("Login error:", err);

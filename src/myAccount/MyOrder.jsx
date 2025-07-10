@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -18,77 +19,52 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import PaymentIcon from "@mui/icons-material/Payment";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripeCheckout from "../../StripeCheckout";
+
+const stripePromise = loadStripe(
+  "pk_test_51Rj2rD4SL7UU1QZPGxMD5bprm3f8tZlxK6TVEIhXAP7fDxn47X8CV4sQtBLyXaeYo7rIEsx53e3i66KlQ6YRxagM00JHRRsvO2"
+);
 
 const MyOrder = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: "001",
-      foodItem: "Chicken Biryani",
-      shippingAddress: "123 Main St",
-      paymentMethod: "Cash",
-      itemPrice: 250,
-      totalPrice: 300,
-      isDelivered: true,
-      isPaid: true,
-    },
-    {
-      id: "002",
-      foodItem: "Beef Burger",
-      shippingAddress: "456 South Rd",
-      paymentMethod: "Card",
-      itemPrice: 150,
-      totalPrice: 180,
-      isDelivered: false,
-      isPaid: true,
-    },
-    {
-      id: "003",
-      foodItem: "Veg Pizza",
-      shippingAddress: "789 West Ave",
-      paymentMethod: "Online",
-      itemPrice: 300,
-      totalPrice: 320,
-      isDelivered: true,
-      isPaid: false,
-    },
-    {
-      id: "004",
-      foodItem: "Grilled Sandwich",
-      shippingAddress: "321 Park Blvd",
-      paymentMethod: "Cash",
-      itemPrice: 120,
-      totalPrice: 150,
-      isDelivered: false,
-      isPaid: false,
-    },
-    {
-      id: "005",
-      foodItem: "Mutton Curry",
-      shippingAddress: "654 Lake St",
-      paymentMethod: "Card",
-      itemPrice: 400,
-      totalPrice: 450,
-      isDelivered: true,
-      isPaid: true,
-    },
-    {
-      id: "006",
-      foodItem: "Grilled Burger",
-      shippingAddress: "321 Park Blvd",
-      paymentMethod: "Cash",
-      itemPrice: 120,
-      totalPrice: 150,
-      isDelivered: false,
-      isPaid: false,
-    },
-  ]);
-
+  const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
 
-  const handleOpenDetails = (order) => {
-    setSelectedOrder(order);
-    setOpenModal(true);
+  // Fetch all orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:3000/api/order/getorders/my",
+          {
+            headers: { Authorization: `Bearer ${userInfo.token}` },
+          }
+        );
+        setOrders(res.data);
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
+      }
+    };
+    fetchOrders();
+  }, [userInfo.token]);
+
+  // Fetch specific order by ID
+  const handleOpenDetails = async (orderId) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/order/orderbyid/${orderId}`,
+        {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        }
+      );
+      setSelectedOrder(res.data);
+      setOpenModal(true);
+    } catch (error) {
+      console.error("Failed to fetch order:", error);
+    }
   };
 
   const handleCloseModal = () => {
@@ -96,100 +72,108 @@ const MyOrder = () => {
     setSelectedOrder(null);
   };
 
-  const handleDelete = (orderId) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete order ID: ${orderId}?`
-    );
-    if (confirmed) {
-      setOrders((prev) => prev.filter((order) => order.id !== orderId));
+  const handleDelete = async (orderId) => {
+    const confirmed = window.confirm("Delete this order?");
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(
+        `http://localhost:3000/api/order/deleteorder/${orderId}`,
+        {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        }
+      );
+      setOrders((prev) => prev.filter((o) => o._id !== orderId));
+      alert("Order deleted.");
+    } catch (err) {
+      alert("Failed to delete order.");
+      console.log(err);
     }
   };
 
   return (
-    <div>
-      <Box>
-        <Typography variant="h4" gutterBottom>
-          Unpaid & Undelivered Orders
-        </Typography>
+    <Box p={4}>
+      <Typography variant="h4" gutterBottom>
+        My Orders
+      </Typography>
 
-        <TableContainer component={Paper} elevation={3}>
-          <Table>
-            <TableHead sx={{ backgroundColor: "#fef3c7" }}>
-              <TableRow>
-                <TableCell>Order ID</TableCell>
-                <TableCell>Food Item</TableCell>
-                <TableCell>Shipping Address</TableCell>
-                <TableCell>Payment</TableCell>
-                <TableCell>Item Price</TableCell>
-                <TableCell>Total Price</TableCell>
-                <TableCell>Delivered</TableCell>
-                <TableCell>Paid</TableCell>
-                <TableCell align="center">Actions</TableCell>
+      <TableContainer component={Paper} elevation={3}>
+        <Table>
+          <TableHead sx={{ backgroundColor: "#fef3c7" }}>
+            <TableRow>
+              <TableCell>Order ID</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Payment</TableCell>
+              <TableCell>Shipping Address</TableCell>
+              <TableCell>Item Price</TableCell>
+              <TableCell>Total Price</TableCell>
+              <TableCell>Delivered</TableCell>
+              <TableCell>Paid</TableCell>
+              <TableCell align="center">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order._id}>
+                <TableCell>{order._id.slice(-6)}</TableCell>
+                <TableCell>
+                  {new Date(order.createdAt).toLocaleString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                  })}
+                </TableCell>
+                <TableCell>{order.paymentMethod}</TableCell>
+                <TableCell>{order.shippingAddress.address}</TableCell>
+                <TableCell>{order.itemPrice}</TableCell>
+                <TableCell>{order.totalPrice}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={order.isDelivered ? "Delivered" : "Pending"}
+                    color={order.isDelivered ? "success" : "warning"}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={order.isPaid ? "Paid" : "Unpaid"}
+                    color={order.isPaid ? "success" : "error"}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <Box display="flex" gap={1} justifyContent="center">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleOpenDetails(order._id)}
+                    >
+                      Details
+                    </Button>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDelete(order._id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.foodItem}</TableCell>
-                  <TableCell>{order.shippingAddress}</TableCell>
-                  <TableCell>{order.paymentMethod}</TableCell>
-                  <TableCell>{order.itemPrice}</TableCell>
-                  <TableCell>{order.totalPrice}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={order.isDelivered ? "Delivered" : "Pending"}
-                      color={order.isDelivered ? "success" : "error"}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={order.isPaid ? "Paid" : "Unpaid"}
-                      color={order.isPaid ? "success" : "error"}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box display="flex" gap={1} justifyContent="center">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => handleOpenDetails(order)}
-                      >
-                        See Details
-                      </Button>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDelete(order.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {orders.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} align="center">
-                    No unpaid and undelivered orders found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      {/* Modal Popup */}
+      {/* Order Details Modal */}
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           sx={{
-            width: "1100px",
-            height: "650px",
+            width: "1000px",
+            maxHeight: "100vh",
             backgroundColor: "#fff",
             p: 4,
             borderRadius: 2,
@@ -201,18 +185,24 @@ const MyOrder = () => {
             overflowY: "auto",
           }}
         >
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
             <Typography variant="h5">Order Details</Typography>
             <IconButton onClick={handleCloseModal}>
               <CloseIcon />
             </IconButton>
           </Box>
 
-          {selectedOrder && (
-            <Box display="flex" gap={4}>
-              {/* Left Side (65%) */}
-              <Box flex={2}>
-                <Typography variant="h6">Order ID: {selectedOrder.id}</Typography>
+          {selectedOrder ? (
+            <Box display="flex" gap={4} flexWrap="wrap">
+              <Box flex={2} minWidth={300}>
+                <Typography variant="h6">
+                  Order ID: {selectedOrder._id}
+                </Typography>
                 <Typography>
                   Delivery Status:{" "}
                   <Chip
@@ -229,16 +219,21 @@ const MyOrder = () => {
                     size="small"
                   />
                 </Typography>
-                <Typography>Payment Method: {selectedOrder.paymentMethod}</Typography>
-                <Typography>Shipping Address: {selectedOrder.shippingAddress}</Typography>
+                <Typography>
+                  Payment Method: {selectedOrder.paymentMethod}
+                </Typography>
+                <Typography>
+                  Shipping Address: {selectedOrder.shippingAddress?.address},
+                  Road: {selectedOrder.shippingAddress?.roadNo}, House:{" "}
+                  {selectedOrder.shippingAddress?.houseNo}, Postal:{" "}
+                  {selectedOrder.shippingAddress?.postalCode}
+                </Typography>
 
                 <Divider sx={{ my: 2 }} />
+                <Typography variant="h6">Food Items</Typography>
 
-                <Typography variant="h6" gutterBottom>
-                  Food Items
-                </Typography>
                 <Box display="flex" flexDirection="column" gap={2}>
-                  {[1, 2, 3].map((_, i) => (
+                  {selectedOrder.foodItem.map((item, i) => (
                     <Box
                       key={i}
                       display="flex"
@@ -246,20 +241,36 @@ const MyOrder = () => {
                       gap={2}
                       borderBottom="1px solid #ccc"
                       pb={1}
+                      sx={{ px: 1 }}
                     >
                       <img
-                        src="https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?cs=srgb&dl=pexels-ash-craig-122861-376464.jpg&fm=jpg"
-                        alt="food"
-                        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
+                        src={item.img}
+                        alt={item.name}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                        }}
                       />
-                      <Typography flex={1}>Demo Food {i + 1}</Typography>
-                      <Typography>Qty: {i + 1}</Typography>
+                      <Box flex={1}>
+                        <Typography fontWeight="bold">{item.name}</Typography>
+                        <Typography variant="body2">
+                          Qty: {item.quantity}
+                        </Typography>
+                        <Typography variant="body2">
+                          Price: ${item.price}
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          Total: ${item.price * item.quantity}
+                        </Typography>
+                      </Box>
                     </Box>
                   ))}
                 </Box>
               </Box>
 
-              {/* Right Side (35%) */}
+              {/* Right Side: Payment Summary */}
               <Box
                 flex={1}
                 sx={{
@@ -267,62 +278,56 @@ const MyOrder = () => {
                   borderRadius: 2,
                   p: 3,
                   height: "fit-content",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
+                  minWidth: 280,
                 }}
               >
-                <Box>
-                  <Typography variant="h6" gutterBottom>
-                    Payment Summary
+                <Typography variant="h6">Payment Summary</Typography>
+                <Box display="flex" justifyContent="space-between" mb={1}>
+                  <Typography>VAT:</Typography>
+                  <Typography>10</Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" mb={1}>
+                  <Typography>Tax:</Typography>
+                  <Typography>15</Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" mb={1}>
+                  <Typography>Delivery:</Typography>
+                  <Typography>20</Typography>
+                </Box>
+                <Divider sx={{ my: 1 }} />
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  fontWeight="bold"
+                >
+                  <Typography>Total:</Typography>
+                  <Typography>
+                    {selectedOrder.totalPrice + 10 + 15 + 20}
                   </Typography>
-                  <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography>VAT:</Typography>
-                    <Typography> 10</Typography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography>Tax:</Typography>
-                    <Typography> 15</Typography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography>Delivery:</Typography>
-                    <Typography> 20</Typography>
-                  </Box>
-                  <Divider sx={{ my: 1 }} />
-                  <Box display="flex" justifyContent="space-between" fontWeight="bold">
-                    <Typography>Total:</Typography>
-                    <Typography> {selectedOrder.totalPrice + 10 + 15 + 20}</Typography>
-                  </Box>
                 </Box>
 
                 <Box mt={4}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<PaymentIcon />}
-                    sx={{
-                      borderColor: "#6366f1",
-                      color: "#6366f1",
-                      fontWeight: "bold",
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: "#eef2ff",
-                        borderColor: "#4f46e5",
-                      },
-                    }}
-                  >
-                    Pay with Stripe
-                  </Button>
+                  {selectedOrder.isPaid ? (
+                    <Chip label="Paid with Stripe" color="success" />
+                  ) : (
+                    <Elements stripe={stripePromise}>
+                      <StripeCheckout
+                        amount={selectedOrder.totalPrice}
+                        orderId={selectedOrder._id}
+                        onSuccess={() => window.location.reload()}
+                      />
+                    </Elements>
+                  )}
                 </Box>
               </Box>
             </Box>
+          ) : (
+            <Typography>Loading...</Typography>
           )}
         </Box>
       </Modal>
-    </div>
+    </Box>
   );
 };
 
 export default MyOrder;
-
-

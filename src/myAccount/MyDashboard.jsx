@@ -45,7 +45,7 @@ const MyDashboard = () => {
         }}
       >
         <NavLink to="/mydashboard/myprofile">Profile</NavLink>
-        <NavLink to="/mydashboard/myhistory">History</NavLink>
+        <NavLink to="/mydashboard/myhistory">Paid History</NavLink>
         <NavLink to="/mydashboard/myorder">Order</NavLink>
         <NavLink to="/mydashboard/mysetting">Settings</NavLink>
         <NavLink onClick={handleLogout}>Log out</NavLink>

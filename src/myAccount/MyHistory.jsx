@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -10,65 +11,38 @@ import {
   Typography,
   Box,
   Chip,
-  IconButton
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+  IconButton,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const MyHistory = () => {
-  const historyData = [
-    {
-      id: '001',
-      foodItem: 'Chicken Biryani',
-      shippingAddress: '123 Main St',
-      paymentMethod: 'Cash',
-      itemPrice: 250,
-      totalPrice: 300,
-      isDelivered: true,
-      isPaid: true,
-    },
-    {
-      id: '002',
-      foodItem: 'Beef Burger',
-      shippingAddress: '456 South Rd',
-      paymentMethod: 'Card',
-      itemPrice: 150,
-      totalPrice: 180,
-      isDelivered: false,
-      isPaid: true,
-    },
-    {
-      id: '003',
-      foodItem: 'Veg Pizza',
-      shippingAddress: '789 West Ave',
-      paymentMethod: 'Online',
-      itemPrice: 300,
-      totalPrice: 320,
-      isDelivered: true,
-      isPaid: false,
-    },
-    {
-      id: '004',
-      foodItem: 'Grilled Sandwich',
-      shippingAddress: '321 Park Blvd',
-      paymentMethod: 'Cash',
-      itemPrice: 120,
-      totalPrice: 150,
-      isDelivered: false,
-      isPaid: false,
-    },
-    {
-      id: '005',
-      foodItem: 'Mutton Curry',
-      shippingAddress: '654 Lake St',
-      paymentMethod: 'Card',
-      itemPrice: 400,
-      totalPrice: 450,
-      isDelivered: true,
-      isPaid: true,
-    },
-  ];
+  const [paidOrders, setPaidOrders] = useState([]);
 
-  const paidOrders = historyData.filter(order => order.isPaid);
+  const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
+
+  useEffect(() => {
+    const fetchPaidOrders = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:3000/api/order/getorders/my",
+          {
+            headers: {
+              Authorization: `Bearer ${userInfo.token}`,
+            },
+          }
+        );
+
+        const allOrders = res.data;
+        const filtered = allOrders.filter((order) => order.isPaid);
+        setPaidOrders(filtered);
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
+        alert("Error fetching order history.");
+      }
+    };
+
+    fetchPaidOrders();
+  }, [userInfo.token]);
 
   return (
     <Box>
@@ -77,46 +51,43 @@ const MyHistory = () => {
       </Typography>
       <TableContainer component={Paper} elevation={3}>
         <Table>
-          <TableHead sx={{ backgroundColor: '#e0f2fe' }}>
+          <TableHead sx={{ backgroundColor: "#e0f2fe" }}>
             <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Food Item</TableCell>
-              <TableCell>Shipping Address</TableCell>
+              <TableCell>Order ID</TableCell>
+              <TableCell>Date</TableCell>
               <TableCell>Payment Method</TableCell>
               <TableCell>Item Price</TableCell>
               <TableCell>Total Price</TableCell>
-              <TableCell>Is Delivered</TableCell>
-              <TableCell>Is Paid</TableCell>
-              <TableCell>Delete</TableCell>
+              <TableCell>Delivered</TableCell>
+              <TableCell>Paid</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {paidOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>{order.id}</TableCell>
-                <TableCell>{order.foodItem}</TableCell>
-                <TableCell>{order.shippingAddress}</TableCell>
+              <TableRow key={order._id}>
+                <TableCell>{order._id.slice(-6)}</TableCell>
+                <TableCell>
+                  {new Date(order.createdAt).toLocaleString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                  })}
+                </TableCell>
                 <TableCell>{order.paymentMethod}</TableCell>
                 <TableCell>{order.itemPrice}</TableCell>
                 <TableCell>{order.totalPrice}</TableCell>
                 <TableCell>
                   <Chip
-                    label={order.isDelivered ? 'Delivered' : 'Pending'}
-                    color={order.isDelivered ? 'success' : 'error'}
+                    label={order.isDelivered ? "Delivered" : "Pending"}
+                    color={order.isDelivered ? "success" : "warning"}
                     variant="outlined"
                   />
                 </TableCell>
                 <TableCell>
-                  <Chip
-                    label="Paid"
-                    color="success"
-                    variant="outlined"
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton color="error">
-                    <DeleteIcon />
-                  </IconButton>
+                  <Chip label="Paid" color="success" variant="outlined" />
                 </TableCell>
               </TableRow>
             ))}
