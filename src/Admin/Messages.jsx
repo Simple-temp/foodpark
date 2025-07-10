@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Table,
@@ -9,54 +9,40 @@ import {
   Typography,
   IconButton,
   Paper,
+  CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-const initialMessages = [
-  {
-    id: "001",
-    name: "John Doe",
-    email: "john@example.com",
-    message: "I love your recipes!",
-    date: "2025-07-01",
-  },
-  {
-    id: "002",
-    name: "Jane Smith",
-    email: "jane@gmail.com",
-    message: "Do you deliver outside the city?",
-    date: "2025-07-02",
-  },
-  {
-    id: "003",
-    name: "Rahim Khan",
-    email: "rahim@yahoo.com",
-    message: "The app is easy to use. Good work!",
-    date: "2025-07-03",
-  },
-  {
-    id: "004",
-    name: "Lina",
-    email: "lina@hotmail.com",
-    message: "How can I become a partner?",
-    date: "2025-07-04",
-  },
-  {
-    id: "005",
-    name: "Karim Uddin",
-    email: "karim@foodie.com",
-    message: "Thanks for the great service!",
-    date: "2025-07-05",
-  },
-];
+import axios from "axios";
 
 const Messages = () => {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id) => {
-    const confirm = window.confirm("Are you sure to delete this message?");
+  // ✅ Fetch all messages from the backend
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/api/messages");
+        setMessages(res.data);
+      } catch (err) {
+        console.error("Failed to fetch messages", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMessages();
+  }, []);
+
+  // ✅ Delete message by ID
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Are you sure you want to delete this message?");
     if (confirm) {
-      setMessages(messages.filter((msg) => msg.id !== id));
+      try {
+        await axios.delete(`http://localhost:3000/api/messages/${id}`);
+        setMessages((prev) => prev.filter((msg) => msg._id !== id));
+      } catch (err) {
+        console.error("Failed to delete message", err);
+      }
     }
   };
 
@@ -66,44 +52,59 @@ const Messages = () => {
         Messages Table
       </Typography>
 
-      <Paper>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#1976d2" }}>
-              <TableCell sx={{ color: "white" }}>ID</TableCell>
-              <TableCell sx={{ color: "white" }}>Name</TableCell>
-              <TableCell sx={{ color: "white" }}>Email</TableCell>
-              <TableCell sx={{ color: "white" }}>Message</TableCell>
-              <TableCell sx={{ color: "white" }}>Date</TableCell>
-              <TableCell sx={{ color: "white" }}>Delete</TableCell>
-            </TableRow>
-          </TableHead>
+      {loading ? (
+        <Box textAlign="center" mt={4}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Paper>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#1976d2" }}>
+                <TableCell sx={{ color: "white" }}>Name</TableCell>
+                <TableCell sx={{ color: "white" }}>Email</TableCell>
+                <TableCell sx={{ color: "white" }}>Phone</TableCell>
+                <TableCell sx={{ color: "white" }}>Message</TableCell>
+                <TableCell sx={{ color: "white" }}>Date</TableCell>
+                <TableCell sx={{ color: "white" }}>Delete</TableCell>
+              </TableRow>
+            </TableHead>
 
-          <TableBody>
-            {messages.map((msg) => (
-              <TableRow key={msg.id}>
-                <TableCell>{msg.id}</TableCell>
-                <TableCell>{msg.name}</TableCell>
-                <TableCell>{msg.email}</TableCell>
-                <TableCell>{msg.message}</TableCell>
-                <TableCell>{msg.date}</TableCell>
-                <TableCell>
-                  <IconButton color="error" onClick={() => handleDelete(msg.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-            {messages.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} align="center">
-                  No messages available.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
+            <TableBody>
+              {messages.map((msg) => (
+                <TableRow key={msg._id}>
+                  <TableCell>{msg.name}</TableCell>
+                  <TableCell>{msg.email}</TableCell>
+                  <TableCell>{msg.phone}</TableCell>
+                  <TableCell>{msg.message}</TableCell>
+                  <TableCell>
+                    {new Date(msg.createdAt).toLocaleString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      year: "numeric",
+                      month: "short",
+                      day: "2-digit",
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton color="error" onClick={() => handleDelete(msg._id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {messages.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    No messages available.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Paper>
+      )}
     </Box>
   );
 };

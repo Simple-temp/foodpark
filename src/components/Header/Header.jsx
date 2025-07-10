@@ -38,14 +38,12 @@ const menuItems = [
 ];
 
 // Dynamically add dashboard items
-if (userInfo) {
+if (userInfo === false) {
   menuItems.splice(1, 0, { text: "Account", path: "/mydashboard" });
-
-  if (userInfo.isAdmin) {
-    menuItems.splice(2, 0, { text: "Admin", path: "/dashboard" });
-  }
 }
-
+if (userInfo.isAdmin === true) {
+  menuItems.splice(2, 0, { text: "Admin", path: "/dashboard" });
+}
 
 const Header = () => {
   const itemCount = useSelector((state) =>

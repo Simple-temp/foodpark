@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,76 +10,107 @@ import {
   IconButton,
   Typography,
   Box,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-
-const userData = [
-  {
-    id: 1,
-    name: 'Alice Johnson',
-    date: '2025-07-06',
-    email: 'alice@example.com',
-  },
-  {
-    id: 2,
-    name: 'Bob Smith',
-    date: '2025-07-05',
-    email: 'bob@example.com',
-  },
-  {
-    id: 3,
-    name: 'Charlie Brown',
-    date: '2025-07-04',
-    email: 'charlie@example.com',
-  },
-  {
-    id: 4,
-    name: 'Diana Prince',
-    date: '2025-07-03',
-    email: 'diana@example.com',
-  },
-  {
-    id: 5,
-    name: 'Ethan Hunt',
-    date: '2025-07-02',
-    email: 'ethan@example.com',
-  },
-];
+  CircularProgress,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "axios";
 
 const Users = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Get token from localStorage
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  const token = userInfo?.token;
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  // Fetch all users
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/user/getalluser", config);
+      setUsers(res.data);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Delete user by ID
+  const handleDelete = async (id) => {
+    const confirm = window.confirm(`Are you sure to delete user ${id}?`);
+    if (!confirm) return;
+
+    try {
+      await axios.delete(`http://localhost:3000/api/user/userbyid/${id}`, config);
+      setUsers((prev) => prev.filter((user) => user._id !== id));
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+    }
+  };
+
   return (
     <Box p={3}>
       <Typography variant="h5" gutterBottom className="header-title-color">
         All Users
       </Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-            <TableRow>
-              <TableCell><strong>ID</strong></TableCell>
-              <TableCell><strong>Name</strong></TableCell>
-              <TableCell><strong>Date</strong></TableCell>
-              <TableCell><strong>Email</strong></TableCell>
-              <TableCell><strong>Delete</strong></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {userData.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.id}</TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.date}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <IconButton color="error" onClick={() => alert(`Delete user ${user.id}`)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+
+      {loading ? (
+        <Box textAlign="center" py={5}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+              <TableRow>
+                <TableCell><strong>#</strong></TableCell>
+                <TableCell><strong>Name</strong></TableCell>
+                <TableCell><strong>Email</strong></TableCell>
+                <TableCell><strong>Created</strong></TableCell>
+                <TableCell><strong>Delete</strong></TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {users.length > 0 ? (
+                users.map((user, index) => (
+                  <TableRow key={user._id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(user._id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    No users found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 };
