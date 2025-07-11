@@ -1,8 +1,19 @@
 import React from "react";
 import { Box } from "@mui/material";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch({ type: "LOGOUT_USER" }); // if you use reducer case
+    localStorage.removeItem("userInfo"); // make sure it's removed
+    window.location.reload();
+    navigate("/");
+  };
+
   return (
     <Box display="flex" height="100vh" fontFamily="Arial, sans-serif">
       {/* Sidebar */}
@@ -43,7 +54,7 @@ const Dashboard = () => {
         <NavLink to="/dashboard/slides">Slides</NavLink>
         <NavLink to="/dashboard/cupons">Cupons</NavLink>
         <NavLink to="/dashboard/users">User</NavLink>
-        <NavLink to="/">Log out</NavLink>
+        <NavLink onClick={handleLogout}>Log out</NavLink>
       </Box>
 
       {/* Content */}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -6,162 +6,326 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  CardActions,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  IconButton,
   Button,
+  Input,
+  IconButton,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "axios";
 
-const initialRecipes = [
-  {
-    name: "Cheesy Chili Mac",
-    price: "$12.99",
-    image:
-      "https://hips.hearstapps.com/hmg-prod/images/easy-dinner-recipes-chili-mac-and-cheese-6721330c2edff.jpg?crop=1xw:1xh;center,top&resize=980:*",
-  },
-  {
-    name: "Vibrant Veggie Bowl",
-    price: "$10.99",
-    image:
-      "https://cdn.loveandlemons.com/wp-content/uploads/2019/09/dinner-ideas-2.jpg",
-  },
-  {
-    name: "Buzzfeed Dinner Special",
-    price: "$11.49",
-    image:
-      "https://img.buzzfeed.com/buzzfeed-static/static/2022-03/5/0/asset/6201713e5c7e/sub-buzz-1009-1646440684-8.jpg?downsize=900:*&output-format=auto&output-quality=auto",
-  },
-  {
-    name: "Classic Beef & Broccoli",
-    price: "$13.99",
-    image:
-      "https://www.simplyrecipes.com/thmb/kTh0yVR2KrJFnGQPNGe1UYIG1t8=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Simply-Recipes-Ground-Beef-Broccoli-LEAD-6-faafd703b949408ba35b3199cd5a22e9.jpg",
-  },
-  {
-    name: "Easy Chicken Delight",
-    price: "$9.99",
-    image:
-      "https://hips.hearstapps.com/hmg-prod/images/easy-dinner-recipes-677efe8559104.png?crop=1.00xw:1.00xh;0,0&resize=640:*",
-  },
-  {
-    name: "Homestyle Curry Rice",
-    price: "$10.49",
-    image: "https://mistyricardo.com/wp-content/uploads/2025/03/Homestyle-Lamb-Curry-11.jpg",
-  },
-  {
-    name: "Herbed Pasta Mix",
-    price: "$8.99",
-    image: "https://www.chefajaychopra.com/assets/img/recipe/1-1669465162HomestylePahaadiChickenBhatRecipewebp.webp",
-  },
-];
+const BASE_URL = "http://localhost:3000";
 
 const Food = () => {
-  const [recipes, setRecipes] = useState(initialRecipes);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
-  const [formData, setFormData] = useState({ name: "", price: "", image: "" });
+  const [foods, setFoods] = useState([]);
 
-  const handleEdit = (index) => {
-    setEditIndex(index);
-    setFormData(recipes[index]);
-    setOpenDialog(true);
+  // Add Food dialog state
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [newFood, setNewFood] = useState({
+    name: "",
+    quantity: "",
+    price: "",
+    des: "",
+    rating: "",
+    review: "",
+    stock: "",
+  });
+  const [imageFile, setImageFile] = useState(null);
+
+  // Edit Food dialog state
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [editFood, setEditFood] = useState(null);
+
+  // Fetch foods
+  const fetchFoods = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/food/getallfoods`);
+      setFoods(response.data);
+    } catch (error) {
+      console.error("Failed to fetch foods", error);
+    }
   };
 
-  const handleDelete = (index) => {
-    const updated = recipes.filter((_, i) => i !== index);
-    setRecipes(updated);
+  useEffect(() => {
+    fetchFoods();
+  }, []);
+
+  // Handle input change for add
+  const handleAddChange = (e) => {
+    setNewFood({ ...newFood, [e.target.name]: e.target.value });
   };
 
-  const handleDialogClose = () => {
-    setOpenDialog(false);
+  const handleAddImageChange = (e) => {
+    setImageFile(e.target.files[0]);
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Add new food
+  const handleAddFood = async () => {
+    try {
+      const formData = new FormData();
+      Object.entries(newFood).forEach(([key, value]) =>
+        formData.append(key, value)
+      );
+      formData.append("img", imageFile);
+
+      await axios.post(`${BASE_URL}/api/food`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setOpenAddDialog(false);
+      setNewFood({
+        name: "",
+        quantity: "",
+        price: "",
+        des: "",
+        rating: "",
+        review: "",
+        stock: "",
+      });
+      setImageFile(null);
+      fetchFoods();
+    } catch (error) {
+      console.error("Failed to add food", error);
+    }
   };
 
-  const handleUpdate = () => {
-    const updated = [...recipes];
-    updated[editIndex] = formData;
-    setRecipes(updated);
-    setOpenDialog(false);
+  // Handle edit dialog open
+  const openEdit = (food) => {
+    setEditFood(food);
+    setOpenEditDialog(true);
+  };
+
+  // Handle input change for edit
+  const handleEditChange = (e) => {
+    setEditFood({ ...editFood, [e.target.name]: e.target.value });
+  };
+
+  // Handle image change for edit
+  const handleEditImageChange = (e) => {
+    setEditFood({ ...editFood, imgFile: e.target.files[0] }); // temporarily store file
+  };
+
+  // Update food
+  const handleUpdateFood = async () => {
+    try {
+      const formData = new FormData();
+
+      formData.append("name", editFood.name);
+      formData.append("quantity", editFood.quantity);
+      formData.append("price", editFood.price);
+      formData.append("des", editFood.des);
+      formData.append("rating", editFood.rating);
+      formData.append("review", editFood.review);
+      formData.append("stock", editFood.stock);
+
+      // If new image uploaded
+      if (editFood.imgFile) {
+        formData.append("img", editFood.imgFile);
+      }
+
+      await axios.put(
+        `${BASE_URL}/api/food/updatebyid/${editFood._id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      setOpenEditDialog(false);
+      setEditFood(null);
+      fetchFoods();
+    } catch (error) {
+      console.error("Failed to update food", error);
+    }
+  };
+
+  // Delete food with confirm alert
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this food item?")) {
+      return;
+    }
+    try {
+      await axios.delete(`${BASE_URL}/api/food/deletebyid/${id}`);
+      fetchFoods();
+    } catch (error) {
+      console.error("Failed to delete food", error);
+    }
   };
 
   return (
     <Box p={4}>
-      <Typography variant="h4" gutterBottom className="header-title-color">
-        Food Items
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">Food Items</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setOpenAddDialog(true)}
+        >
+          Add Food
+        </Button>
+      </Box>
 
       <Grid container spacing={3}>
-        {recipes.map((item, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card>
+        {foods.map((item) => (
+          <Grid item xs={12} sm={6} md={4} key={item._id}>
+            <Card sx={{ height: 495, width:400, display: "flex", flexDirection: "column", borderRadius: "5%" }}>
               <CardMedia
                 component="img"
-                height="180"
-                image={item.image}
+                height="200"
+                image={
+                  item.img?.startsWith("http")
+                    ? item.img
+                    : `${BASE_URL}/uploads/${item.img.replace(/^\/uploads\/?/, "")}`
+                }
                 alt={item.name}
               />
-              <CardContent>
+              <CardContent sx={{ flexGrow: 1 }}>
                 <Typography variant="h6">{item.name}</Typography>
-                <Typography variant="body1" color="textSecondary">
-                  Price: {item.price}
+                <Typography>Price: ${item.price}</Typography>
+                <Typography>Quantity: {item.quantity}</Typography>
+                <Typography>Rating: {item.rating}</Typography>
+                <Typography>Review: {item.review}</Typography>
+                <Typography>Stock: {item.stock}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {item.des}
                 </Typography>
               </CardContent>
-              <CardActions>
-                <IconButton color="primary" onClick={() => handleEdit(index)}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton color="error" onClick={() => handleDelete(index)}>
-                  <DeleteIcon />
-                </IconButton>
-              </CardActions>
+              <Box sx={{ display: "flex", justifyContent: "space-around", mb: 1 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => openEdit(item)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  onClick={() => handleDelete(item._id)}
+                >
+                  Delete
+                </Button>
+              </Box>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Edit Dialog */}
-      <Dialog open={openDialog} onClose={handleDialogClose} fullWidth maxWidth="sm">
-        <DialogTitle>Update Food Item</DialogTitle>
+      {/* Add Food Dialog */}
+      <Dialog
+        open={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Add New Food</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="Name"
-            name="name"
-            margin="normal"
-            value={formData.name}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            label="Price"
-            name="price"
-            margin="normal"
-            value={formData.price}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            label="Image URL"
-            name="image"
-            margin="normal"
-            value={formData.image}
-            onChange={handleChange}
-          />
+          <TextField fullWidth margin="dense" label="Name" name="name" onChange={handleAddChange} />
+          <TextField fullWidth margin="dense" label="Quantity" name="quantity" type="number" onChange={handleAddChange} />
+          <TextField fullWidth margin="dense" label="Price" name="price" type="number" onChange={handleAddChange} />
+          <TextField fullWidth margin="dense" label="Description" name="des" onChange={handleAddChange} />
+          <TextField fullWidth margin="dense" label="Rating" name="rating" type="number" onChange={handleAddChange} />
+          <TextField fullWidth margin="dense" label="Review" name="review" type="number" onChange={handleAddChange} />
+          <TextField fullWidth margin="dense" label="Stock" name="stock" type="number" onChange={handleAddChange} />
+          <Input fullWidth type="file" onChange={handleAddImageChange} sx={{ mt: 2 }} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button variant="contained" onClick={handleUpdate}>
-            Save
-          </Button>
+          <Button onClick={() => setOpenAddDialog(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleAddFood}>Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Food Dialog */}
+      <Dialog
+        open={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Update Food Item</DialogTitle>
+        <DialogContent>
+          {editFood && (
+            <>
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Name"
+                name="name"
+                value={editFood.name}
+                onChange={handleEditChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Quantity"
+                name="quantity"
+                type="number"
+                value={editFood.quantity}
+                onChange={handleEditChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Price"
+                name="price"
+                type="number"
+                value={editFood.price}
+                onChange={handleEditChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Description"
+                name="des"
+                value={editFood.des}
+                onChange={handleEditChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Rating"
+                name="rating"
+                type="number"
+                value={editFood.rating}
+                onChange={handleEditChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Review"
+                name="review"
+                type="number"
+                value={editFood.review}
+                onChange={handleEditChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Stock"
+                name="stock"
+                type="number"
+                value={editFood.stock}
+                onChange={handleEditChange}
+              />
+              <Input
+                fullWidth
+                type="file"
+                onChange={handleEditImageChange}
+                sx={{ mt: 2 }}
+              />
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleUpdateFood}>Update</Button>
         </DialogActions>
       </Dialog>
     </Box>

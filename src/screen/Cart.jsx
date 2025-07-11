@@ -1,8 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import RemoveIcon from "@mui/icons-material/Remove";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
   Typography,
@@ -11,12 +8,34 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
+import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "axios";
 import { Link } from "react-router-dom";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const items = useSelector((state) => state.cartState.cart.fooditem || []);
-  console.log(items)
+
+  const [couponInput, setCouponInput] = useState("");
+  const [couponData, setCouponData] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [couponApplied, setCouponApplied] = useState(false);
+
+  // Fetch coupon data from backend
+  useEffect(() => {
+    const fetchCoupon = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:3000/api/cupon");
+        setCouponData(data);
+      } catch (error) {
+        console.error("Coupon not found");
+        console.log(error)
+      }
+    };
+    fetchCoupon();
+  }, []);
 
   const handleIncrease = (index) => {
     dispatch({ type: "INCREASE", payload: index });
@@ -34,22 +53,39 @@ const Cart = () => {
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const vat = parseFloat((subtotal * 0.05).toFixed(2));
-  const tax = parseFloat((subtotal * 0.10).toFixed(2));
-  const delivery = parseFloat((subtotal * 0.07).toFixed(2));
-  const total = (subtotal + vat + tax + delivery).toFixed(2);
+
+  const vat = couponData ? (subtotal * couponData.vat) / 100 : 0;
+  const tax = couponData ? (subtotal * couponData.tax) / 100 : 0;
+  const delivery = couponData ? parseFloat(couponData.deliveryCharge || 0) : 0;
+
+  const handleApplyCoupon = () => {
+    if (
+      couponData &&
+      couponInput.trim().toLowerCase() === couponData.cupon.toLowerCase()
+    ) {
+      const discount = (subtotal * couponData.discount) / 100;
+      setDiscountAmount(discount);
+      setCouponApplied(true);
+    } else {
+      alert("Invalid or expired coupon code");
+      setDiscountAmount(0);
+      setCouponApplied(false);
+    }
+  };
+
+  const total = (
+    subtotal +
+    vat +
+    tax +
+    delivery -
+    discountAmount
+  ).toFixed(2);
 
   return (
     <div className="container-width">
       <Box sx={{ p: 4 }}>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 4,
-          }}
-        >
-          {/* Left Side */}
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+          {/* Cart Items */}
           <Box sx={{ flex: "0 0 65%" }}>
             <Typography variant="h5" gutterBottom>
               Your Cart
@@ -84,7 +120,7 @@ const Cart = () => {
                   <Box flex={1}>
                     <Typography fontWeight="bold">{item.name}</Typography>
                     <Typography color="text.secondary">
-                       {item.price}
+                      {item.price}
                     </Typography>
                   </Box>
                   <Box display="flex" alignItems="center">
@@ -97,7 +133,7 @@ const Cart = () => {
                     </IconButton>
                   </Box>
                   <Typography width={100} textAlign="right" fontWeight="bold">
-                     {item.price * item.quantity}
+                    {item.price * item.quantity}
                   </Typography>
                   <IconButton
                     onClick={() => handleRemove(index)}
@@ -110,7 +146,7 @@ const Cart = () => {
             )}
           </Box>
 
-          {/* Right Side */}
+          {/* Cart Summary */}
           <Box
             sx={{
               flex: "0 0 30%",
@@ -129,26 +165,31 @@ const Cart = () => {
               <Typography>{subtotal.toFixed(2)}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>VAT (5%):</Typography>
-              <Typography> {vat}</Typography>
+              <Typography>VAT ({couponData?.vat || 0}%):</Typography>
+              <Typography>{vat.toFixed(2)}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>Tax (5%):</Typography>
-              <Typography>{tax}</Typography>
+              <Typography>Tax ({couponData?.tax || 0}%):</Typography>
+              <Typography>{tax.toFixed(2)}</Typography>
             </Box>
-            <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography>Delivery (5%):</Typography>
-              <Typography> {delivery}</Typography>
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography>Delivery:</Typography>
+              <Typography>{delivery.toFixed(2)}</Typography>
             </Box>
 
-            <Box display="flex" gap={1} mb={2}>
+            {/* Coupon Field */}
+            <Box display="flex" gap={1} mb={1}>
               <TextField
                 variant="outlined"
                 size="small"
                 placeholder="Enter coupon"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value)}
                 sx={{ flex: 1 }}
               />
               <Button
+                onClick={handleApplyCoupon}
+                disabled={couponApplied}
                 variant="outlined"
                 sx={{
                   color: "#4f46e5",
@@ -160,9 +201,18 @@ const Cart = () => {
                   },
                 }}
               >
-                Apply Coupon
+                {couponApplied ? "Applied" : "Apply"}
               </Button>
             </Box>
+
+            {discountAmount > 0 && (
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography>Discount ({couponData?.discount}%):</Typography>
+                <Typography color="green">
+                  - {discountAmount.toFixed(2)}
+                </Typography>
+              </Box>
+            )}
 
             <Divider sx={{ my: 1 }} />
 
@@ -172,7 +222,7 @@ const Cart = () => {
               fontWeight="bold"
             >
               <Typography>Total:</Typography>
-              <Typography> {total}</Typography>
+              <Typography>{total}</Typography>
             </Box>
 
             <Link to="/shippingaddressandpayment">

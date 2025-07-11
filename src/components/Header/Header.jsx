@@ -38,10 +38,10 @@ const menuItems = [
 ];
 
 // Dynamically add dashboard items
-if (userInfo === false) {
+if (userInfo?.isAdmin === false) {
   menuItems.splice(1, 0, { text: "Account", path: "/mydashboard" });
 }
-if (userInfo.isAdmin === true) {
+if (userInfo?.isAdmin === true) {
   menuItems.splice(2, 0, { text: "Admin", path: "/dashboard" });
 }
 

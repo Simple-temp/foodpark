@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Divider, Button, Paper } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,22 +10,32 @@ const OrderDetails = () => {
   const dispatch = useDispatch();
   const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
   const fooditems = useSelector((state) => state.cartState.cart.fooditem || []);
-  const shippingaddress = useSelector(
-    (state) => state.cartState.cart.shippingAddress || {}
-  );
-  const paymentmethod = useSelector(
-    (state) => state.cartState.cart.paymentMethod || ""
-  );
+  const shippingaddress = useSelector((state) => state.cartState.cart.shippingAddress || {});
+  const paymentmethod = useSelector((state) => state.cartState.cart.paymentMethod || "");
 
-  const subtotal = fooditems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  const [cuponData, setCuponData] = useState(null);
 
-  const VAT = 10;
-  const TAX = 15;
-  const DELIVERY = 20;
-  const total = subtotal + VAT + TAX + DELIVERY;
+  useEffect(() => {
+    const fetchCupon = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:3000/api/cupon");
+        setCuponData(data);
+      } catch (err) {
+        console.warn("No coupon data found");
+        setCuponData(null);
+        console.log(err)
+      }
+    };
+    fetchCupon();
+  }, []);
+
+  const subtotal = fooditems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  const VAT = cuponData ? (subtotal * (cuponData.vat / 100)).toFixed(2) : 0;
+  const TAX = cuponData ? (subtotal * (cuponData.tax / 100)).toFixed(2) : 0;
+  const DELIVERY = cuponData ? parseFloat(cuponData.deliveryCharge).toFixed(2) : 0;
+
+  const total = (parseFloat(subtotal) + parseFloat(VAT) + parseFloat(TAX) + parseFloat(DELIVERY)).toFixed(2);
 
   if (!fooditems.length) {
     return (
@@ -39,12 +49,7 @@ const OrderDetails = () => {
 
   return (
     <div className="container-width inner-order-details">
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5" fontWeight="bold">
           Order Details
         </Typography>
@@ -53,66 +58,39 @@ const OrderDetails = () => {
       <Box display="flex" gap={4} flexWrap="wrap">
         {/* Left Side */}
         <Box flex={2} minWidth={300}>
-          <Paper
-            elevation={3}
-            sx={{ p: 3, borderRadius: 2, backgroundColor: "transparent" }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Customer Details
-            </Typography>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 2, backgroundColor: "transparent" }}>
+            <Typography variant="h6" gutterBottom>Customer Details</Typography>
             <Typography>Name: {userInfo.name || "N/A"}</Typography>
             <Typography>Email: {userInfo.email || "N/A"}</Typography>
 
             <Divider sx={{ my: 2 }} />
 
-            <Typography variant="h6" gutterBottom>
-              Shipping Address
-            </Typography>
+            <Typography variant="h6" gutterBottom>Shipping Address</Typography>
             <Typography>Address: {shippingaddress.address || "N/A"}</Typography>
             <Typography>Road No: {shippingaddress.roadNo || "N/A"}</Typography>
-            <Typography>
-              House No: {shippingaddress.houseNo || "N/A"}
-            </Typography>
-            <Typography>
-              Post Code: {shippingaddress.postCode || "N/A"}
-            </Typography>
+            <Typography>House No: {shippingaddress.houseNo || "N/A"}</Typography>
+            <Typography>Post Code: {shippingaddress.postCode || "N/A"}</Typography>
 
             <Divider sx={{ my: 2 }} />
 
-            <Typography variant="h6" gutterBottom>
-              Payment Method
-            </Typography>
+            <Typography variant="h6" gutterBottom>Payment Method</Typography>
             <Typography>{paymentmethod || "N/A"}</Typography>
           </Paper>
 
           <Divider sx={{ my: 3 }} />
 
-          <Typography variant="h6" gutterBottom>
-            Food Items
-          </Typography>
+          <Typography variant="h6" gutterBottom>Food Items</Typography>
           <Box display="flex" flexDirection="column" gap={2}>
             {fooditems.map((item, index) => (
-              <Box
-                key={index}
-                display="flex"
-                alignItems="center"
-                gap={2}
-                borderBottom="1px solid #ccc"
-                pb={1}
-              >
+              <Box key={index} display="flex" alignItems="center" gap={2} borderBottom="1px solid #ccc" pb={1}>
                 <img
                   src={item.img}
                   alt={item.name}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                  }}
+                  style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
                 />
                 <Typography flex={1}>{item.name}</Typography>
                 <Typography>Qty: {item.quantity}</Typography>
-                <Typography> {item.price * item.quantity}</Typography>
+                <Typography>{item.price * item.quantity}</Typography>
               </Box>
             ))}
           </Box>
@@ -133,33 +111,27 @@ const OrderDetails = () => {
           }}
         >
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Payment Summary
-            </Typography>
+            <Typography variant="h6" gutterBottom>Payment Summary</Typography>
             <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Subtotal:</Typography>
-              <Typography>{subtotal}</Typography>
+              <Typography>{subtotal.toFixed(2)}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>VAT:</Typography>
+              <Typography>VAT ({cuponData?.vat || 0}%):</Typography>
               <Typography>{VAT}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>Tax:</Typography>
-              <Typography> {TAX}</Typography>
+              <Typography>Tax ({cuponData?.tax || 0}%):</Typography>
+              <Typography>{TAX}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Delivery:</Typography>
-              <Typography> {DELIVERY}</Typography>
+              <Typography>{DELIVERY}</Typography>
             </Box>
             <Divider sx={{ my: 1 }} />
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              fontWeight="bold"
-            >
+            <Box display="flex" justifyContent="space-between" fontWeight="bold">
               <Typography>Total:</Typography>
-              <Typography> {total}</Typography>
+              <Typography>{total}</Typography>
             </Box>
           </Box>
 
@@ -170,9 +142,7 @@ const OrderDetails = () => {
               startIcon={<PaymentIcon />}
               onClick={async () => {
                 try {
-                  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
                   const token = userInfo?.token;
-
                   const config = {
                     headers: {
                       Authorization: `Bearer ${token}`,
@@ -200,11 +170,10 @@ const OrderDetails = () => {
 
                   const orderId = response.data._id;
 
-                  // Clear fooditems from Redux and localStorage
+                  // Clear Redux + LocalStorage
                   dispatch({ type: "CLEAR_FOODITEM" });
                   localStorage.removeItem("cart");
 
-                  // Redirect to dynamic route
                   navigate(`/orderdetailsbyid/${orderId}`);
                 } catch (error) {
                   console.error("Order creation failed:", error);

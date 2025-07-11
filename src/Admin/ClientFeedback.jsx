@@ -1,74 +1,97 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  Avatar,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "axios";
 
-const clients = [
-  {
-    name: "Business Growth Team",
-    description: "Great experience with our service!",
-    image:
-      "https://smallbizclub.com/wp-content/uploads/2024/05/AdobeStock_419253624-scaled.jpeg",
-  },
-  {
-    name: "Happy Regulars",
-    description: "Our loyal clients keep coming back for more!",
-    image:
-      "https://nccusa.com/wp-content/uploads/2016/07/happy-regular-customers.jpg",
-  },
-  {
-    name: "Friendly Diners",
-    description: "We value our customers and their experiences.",
-    image:
-      "https://www.partstown.com/about-us/wp-content/uploads/2019/10/Friends-Dining-Together-6-Ways-to-Enhance-Customer-Experience-in-Your-Restaurant.png",
-  },
-  {
-    name: "Evening Vibes",
-    description: "An elegant night out with satisfied guests.",
-    image:
-      "https://i0.wp.com/citycheersmedia.com/wp-content/uploads/2023/05/alex-haney-CAhjZmVk5H4-unsplash-scaled.webp?fit=2560%2C1707&ssl=1",
-  },
-];
+const BASE_URL = "http://localhost:3000"; // Update as needed
 
 const ClientFeedback = () => {
-  return (
-    <div>
-      <Box textAlign="center" px={2}>
-        <Typography variant="h4" gutterBottom className="header-title-color">
-          Our Clients
-        </Typography>
+  const [reviews, setReviews] = useState([]);
 
-        <Grid container spacing={4} mt={1}>
-          {clients.map((client, i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Card sx={{ height: "100%" }}>
-                <CardMedia
-                  component="img"
-                  image={client.image}
-                  alt={client.name}
+  const fetchReviews = async () => {
+    try {
+      const { data } = await axios.get(`${BASE_URL}/api/review/all`);
+      setReviews(data);
+    } catch (err) {
+      console.error("Failed to load reviews", err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) return;
+    try {
+      await axios.delete(`${BASE_URL}/api/review/${id}`);
+      fetchReviews(); // Refresh after deletion
+    } catch (err) {
+      console.error("Failed to delete", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  return (
+    <Box p={4}>
+      <Typography variant="h4" gutterBottom className="header-title-color">
+        All Client Reviews
+      </Typography>
+
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>User Name</TableCell>
+            <TableCell>Food Image</TableCell>
+            <TableCell>Food Name</TableCell>
+            <TableCell>Message</TableCell>
+            <TableCell>Date</TableCell>
+            <TableCell>Action</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {reviews.map((r) => (
+            <TableRow key={r._id}>
+              <TableCell>{r.name}</TableCell>
+              <TableCell>
+                <Avatar
+                  src={
+                    r.foodid?.img?.startsWith("http")
+                      ? r.foodid.img
+                      : `${BASE_URL}${r.foodid.img}`
+                  }
+                  alt={r.foodid?.name}
                   sx={{
-                    height: 250,
-                    objectFit: "cover",
-                    width: "100%",
+                    width: 80,
+                    height: 80,
+                    borderRadius: "50%",
                   }}
                 />
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {client.name}
-                  </Typography>
-                  <Typography variant="body2">{client.description}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+              </TableCell>
+              <TableCell>{r.foodid?.name || "N/A"}</TableCell>
+              <TableCell>{r.message}</TableCell>
+              <TableCell>
+                {new Date(r.createdAt).toLocaleString("en-US")}
+              </TableCell>
+              <TableCell>
+                <IconButton color="error" onClick={() => handleDelete(r._id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </TableCell>
+            </TableRow>
           ))}
-        </Grid>
-      </Box>
-    </div>
+        </TableBody>
+      </Table>
+    </Box>
   );
 };
 
