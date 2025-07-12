@@ -7,7 +7,11 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import StripeCheckout from "../../StripeCheckout"; // your new component
 
-const stripePromise = loadStripe("pk_test_51Rj2rD4SL7UU1QZPGxMD5bprm3f8tZlxK6TVEIhXAP7fDxn47X8CV4sQtBLyXaeYo7rIEsx53e3i66KlQ6YRxagM00JHRRsvO2");
+const stripePromise = loadStripe(
+  "pk_test_51Rj2rD4SL7UU1QZPGxMD5bprm3f8tZlxK6TVEIhXAP7fDxn47X8CV4sQtBLyXaeYo7rIEsx53e3i66KlQ6YRxagM00JHRRsvO2"
+);
+
+const BASE_URL = "http://localhost:3000";
 
 const OrderDetailsById = () => {
   const { id } = useParams(); // get ID from URL
@@ -124,7 +128,11 @@ const OrderDetailsById = () => {
                 sx={{ px: 1 }}
               >
                 <img
-                  src={item.img}
+                  src={
+                    item.img?.startsWith("http")
+                      ? item.img
+                      : `${BASE_URL}${item.img}`
+                  }
                   alt={item.name}
                   style={{
                     width: 80,

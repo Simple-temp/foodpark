@@ -20,6 +20,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import PaymentIcon from "@mui/icons-material/Payment";
 import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripeCheckout from "../../StripeCheckout";
+
+const BASE_URL = "http://localhost:3000";
 
 const AllOrder = () => {
   const [orders, setOrders] = useState([]);
@@ -49,24 +53,23 @@ const AllOrder = () => {
     fetchOrders();
   }, []);
 
-const handleOpenDetails = async (order) => {
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-  const token = userInfo?.token;
+  const handleOpenDetails = async (order) => {
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    const token = userInfo?.token;
 
-  try {
-    const response = await axios.get(
-      `http://localhost:3000/api/order/orderbyid/${order._id}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    setSelectedOrder(response.data);
-    setOpenModal(true);
-  } catch (err) {
-    console.error("Failed to fetch order details:", err);
-  }
-};
-
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/order/orderbyid/${order._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setSelectedOrder(response.data);
+      setOpenModal(true);
+    } catch (err) {
+      console.error("Failed to fetch order details:", err);
+    }
+  };
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -182,161 +185,176 @@ const handleOpenDetails = async (order) => {
       </Box>
 
       {/* Modal (same as before) */}
-<Modal open={openModal} onClose={handleCloseModal}>
-  <Box
-    sx={{
-      width: "1100px",
-      height: "650px",
-      backgroundColor: "#fff",
-      p: 4,
-      borderRadius: 2,
-      boxShadow: 24,
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      overflowY: "auto",
-    }}
-  >
-    <Box
-      display="flex"
-      justifyContent="space-between"
-      alignItems="center"
-      mb={2}
-    >
-      <Typography variant="h5">Order Details</Typography>
-      <IconButton onClick={handleCloseModal}>
-        <CloseIcon />
-      </IconButton>
-    </Box>
-
-    {selectedOrder ? (
-      <Box display="flex" gap={4} flexWrap="wrap">
-        {/* LEFT SIDE */}
-        <Box flex={2} minWidth={300}>
-          <Typography variant="h6">Order ID: {selectedOrder._id}</Typography>
-          <Typography>
-            Delivery Status:{" "}
-            <Chip
-              label={selectedOrder.isDelivered ? "Delivered" : "Pending"}
-              color={selectedOrder.isDelivered ? "success" : "error"}
-              size="small"
-            />
-          </Typography>
-          <Typography>
-            Payment Status:{" "}
-            <Chip
-              label={selectedOrder.isPaid ? "Paid" : "Unpaid"}
-              color={selectedOrder.isPaid ? "success" : "error"}
-              size="small"
-            />
-          </Typography>
-          <Typography>Payment Method: {selectedOrder.paymentMethod}</Typography>
-          <Typography>
-            Shipping Address: {selectedOrder.shippingAddress?.address}, Road No:{" "}
-            {selectedOrder.shippingAddress?.roadNo}, House No:{" "}
-            {selectedOrder.shippingAddress?.houseNo}, Postal Code:{" "}
-            {selectedOrder.shippingAddress?.postalCode}
-          </Typography>
-
-          <Divider sx={{ my: 2 }} />
-          <Typography variant="h6" gutterBottom>
-            Food Items
-          </Typography>
-          <Box display="flex" flexDirection="column" gap={2}>
-            {selectedOrder.foodItem?.map((item, i) => (
-              <Box
-                key={i}
-                display="flex"
-                alignItems="center"
-                gap={2}
-                borderBottom="1px solid #ccc"
-                pb={1}
-                sx={{ px: 1 }}
-              >
-                <img
-                  src={item.img}
-                  alt={item.name}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                  }}
-                />
-                <Box flex={1}>
-                  <Typography fontWeight="bold">{item.name}</Typography>
-                  <Typography variant="body2">Qty: {item.quantity}</Typography>
-                  <Typography variant="body2">Price: ${item.price}</Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    Total: ${item.price * item.quantity}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-
-        {/* RIGHT SIDE */}
+      <Modal open={openModal} onClose={handleCloseModal}>
         <Box
-          flex={1}
           sx={{
-            backgroundColor: "#f9fafb",
+            width: "1100px",
+            height: "650px",
+            backgroundColor: "#fff",
+            p: 4,
             borderRadius: 2,
-            p: 3,
-            height: "fit-content",
-            minWidth: 280,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
+            boxShadow: 24,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            overflowY: "auto",
           }}
         >
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Payment Summary
-            </Typography>
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>VAT:</Typography>
-              <Typography>10</Typography>
-            </Box>
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>Tax:</Typography>
-              <Typography>15</Typography>
-            </Box>
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>Delivery:</Typography>
-              <Typography>20</Typography>
-            </Box>
-            <Divider sx={{ my: 1 }} />
-            <Box display="flex" justifyContent="space-between">
-              <Typography>Total:</Typography>
-              <Typography>
-                {selectedOrder.totalPrice + 10 + 15 + 20}
-              </Typography>
-            </Box>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Typography variant="h5">Order Details</Typography>
+            <IconButton onClick={handleCloseModal}>
+              <CloseIcon />
+            </IconButton>
           </Box>
 
-          <Box mt={4}>
-            {selectedOrder.isPaid ? (
-              <Chip label="Paid with Stripe" color="success" />
-            ) : (
-              <Elements stripe={loadStripe("pk_test_51Rj2rD4SL7UU1QZPGxMD5bprm3f8tZlxK6TVEIhXAP7fDxn47X8CV4sQtBLyXaeYo7rIEsx53e3i66KlQ6YRxagM00JHRRsvO2")}>
-                <StripeCheckout
-                  amount={selectedOrder.totalPrice}
-                  orderId={selectedOrder._id}
-                  onSuccess={() => window.location.reload()}
-                />
-              </Elements>
-            )}
-          </Box>
+          {selectedOrder ? (
+            <Box display="flex" gap={4} flexWrap="wrap">
+              {/* LEFT SIDE */}
+              <Box flex={2} minWidth={300}>
+                <Typography variant="h6">
+                  Order ID: {selectedOrder._id}
+                </Typography>
+                <Typography>
+                  Delivery Status:{" "}
+                  <Chip
+                    label={selectedOrder.isDelivered ? "Delivered" : "Pending"}
+                    color={selectedOrder.isDelivered ? "success" : "error"}
+                    size="small"
+                  />
+                </Typography>
+                <Typography>
+                  Payment Status:{" "}
+                  <Chip
+                    label={selectedOrder.isPaid ? "Paid" : "Unpaid"}
+                    color={selectedOrder.isPaid ? "success" : "error"}
+                    size="small"
+                  />
+                </Typography>
+                <Typography>
+                  Payment Method: {selectedOrder.paymentMethod}
+                </Typography>
+                <Typography>
+                  Shipping Address: {selectedOrder.shippingAddress?.address},
+                  Road No: {selectedOrder.shippingAddress?.roadNo}, House No:{" "}
+                  {selectedOrder.shippingAddress?.houseNo}, Postal Code:{" "}
+                  {selectedOrder.shippingAddress?.postalCode}
+                </Typography>
+
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Food Items
+                </Typography>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  {selectedOrder.foodItem?.map((item, i) => (
+                    <Box
+                      key={i}
+                      display="flex"
+                      alignItems="center"
+                      gap={2}
+                      borderBottom="1px solid #ccc"
+                      pb={1}
+                      sx={{ px: 1 }}
+                    >
+                      <img
+                        src={
+                          item.img?.startsWith("http")
+                            ? item.img
+                            : `${BASE_URL}${item.img}`
+                        }
+                        alt={item.name}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                        }}
+                      />
+                      <Box flex={1}>
+                        <Typography fontWeight="bold">{item.name}</Typography>
+                        <Typography variant="body2">
+                          Qty: {item.quantity}
+                        </Typography>
+                        <Typography variant="body2">
+                          Price: ${item.price}
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          Total: ${item.price * item.quantity}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+
+              {/* RIGHT SIDE */}
+              <Box
+                flex={1}
+                sx={{
+                  backgroundColor: "#f9fafb",
+                  borderRadius: 2,
+                  p: 3,
+                  height: "fit-content",
+                  minWidth: 280,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Payment Summary
+                  </Typography>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography>VAT:</Typography>
+                    <Typography>10</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography>Tax:</Typography>
+                    <Typography>15</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography>Delivery:</Typography>
+                    <Typography>20</Typography>
+                  </Box>
+                  <Divider sx={{ my: 1 }} />
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography>Total:</Typography>
+                    <Typography>
+                      {selectedOrder.totalPrice + 10 + 15 + 20}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box mt={4}>
+                  {selectedOrder.isPaid ? (
+                    <Chip label="Paid with Stripe" color="success" />
+                  ) : (
+                    <Elements
+                      stripe={loadStripe(
+                        "pk_test_51Rj2rD4SL7UU1QZPGxMD5bprm3f8tZlxK6TVEIhXAP7fDxn47X8CV4sQtBLyXaeYo7rIEsx53e3i66KlQ6YRxagM00JHRRsvO2"
+                      )}
+                    >
+                      <StripeCheckout
+                        amount={selectedOrder.totalPrice}
+                        orderId={selectedOrder._id}
+                        onSuccess={() => window.location.reload()}
+                      />
+                    </Elements>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          ) : (
+            <Typography>Loading...</Typography>
+          )}
         </Box>
-      </Box>
-    ) : (
-      <Typography>Loading...</Typography>
-    )}
-  </Box>
-</Modal>
-
+      </Modal>
     </div>
   );
 };

@@ -14,6 +14,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+const BASE_URL = "http://localhost:3000";
+
 const Cart = () => {
   const dispatch = useDispatch();
   const items = useSelector((state) => state.cartState.cart.fooditem || []);
@@ -31,7 +33,7 @@ const Cart = () => {
         setCouponData(data);
       } catch (error) {
         console.error("Coupon not found");
-        console.log(error)
+        console.log(error);
       }
     };
     fetchCoupon();
@@ -73,13 +75,7 @@ const Cart = () => {
     }
   };
 
-  const total = (
-    subtotal +
-    vat +
-    tax +
-    delivery -
-    discountAmount
-  ).toFixed(2);
+  const total = (subtotal + vat + tax + delivery - discountAmount).toFixed(2);
 
   return (
     <div className="container-width">
@@ -107,7 +103,11 @@ const Cart = () => {
                   }}
                 >
                   <img
-                    src={item.img}
+                    src={
+                      item.img?.startsWith("http")
+                        ? item.img
+                        : `${BASE_URL}${item.img}`
+                    }
                     alt={item.name}
                     style={{
                       width: 80,
@@ -119,9 +119,7 @@ const Cart = () => {
                   />
                   <Box flex={1}>
                     <Typography fontWeight="bold">{item.name}</Typography>
-                    <Typography color="text.secondary">
-                      {item.price}
-                    </Typography>
+                    <Typography color="text.secondary">{item.price}</Typography>
                   </Box>
                   <Box display="flex" alignItems="center">
                     <IconButton onClick={() => handleDecrease(index)}>
