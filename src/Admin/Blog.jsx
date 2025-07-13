@@ -21,7 +21,7 @@ import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://localhost:4000";
 
 const Blog = () => {
   const [posts, setPosts] = useState([]);
@@ -34,7 +34,7 @@ const Blog = () => {
   });
 
   const fetchPosts = async () => {
-    const res = await axios.get("http://localhost:3000/api/blog");
+    const res = await axios.get("http://localhost:4000/api/blog/getallblog");
     setPosts(res.data);
   };
 
@@ -79,10 +79,10 @@ const Blog = () => {
 
     try {
       if (editId) {
-        await axios.put(`http://localhost:3000/api/blog/${editId}`, data);
+        await axios.put(`http://localhost:4000/api/blog/${editId}`, data);
         toast.success("Blog Update successful!");
       } else {
-        await axios.post("http://localhost:3000/api/blog", data);
+        await axios.post("http://localhost:4000/api/blog", data);
         toast.success("Blog create successful!");
       }
       fetchPosts();
@@ -95,7 +95,7 @@ const Blog = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this blog?")) {
       try {
-        await axios.delete(`http://localhost:3000/api/blog/${id}`);
+        await axios.delete(`http://localhost:4000/api/blog/${id}`);
         fetchPosts();
       } catch (error) {
         console.error("Error deleting blog:", error);
@@ -127,7 +127,7 @@ const Blog = () => {
             <Grid item xs={12} sm={6} md={4} key={post._id}>
               <Card
                 sx={{
-                  width : 400,
+                  width: 400,
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
@@ -138,7 +138,7 @@ const Blog = () => {
                   image={
                     post.image?.startsWith("http")
                       ? post.image
-                      : `http://localhost:3000/uploads/${post.image}`
+                      : `http://localhost:4000/uploads/${post.image}`
                   }
                 />
 

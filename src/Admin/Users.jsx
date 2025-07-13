@@ -32,7 +32,10 @@ const Users = () => {
   // Fetch all users
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/user/getalluser", config);
+      const res = await axios.get(
+        "http://localhost:4000/api/user/getalluser",
+        config
+      );
       setUsers(res.data);
     } catch (error) {
       console.error("Failed to fetch users:", error);
@@ -51,7 +54,10 @@ const Users = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://localhost:3000/api/user/userbyid/${id}`, config);
+      await axios.delete(
+        `http://localhost:4000/api/user/userbyid/${id}`,
+        config
+      );
       setUsers((prev) => prev.filter((user) => user._id !== id));
     } catch (error) {
       console.error("Failed to delete user:", error);
@@ -73,11 +79,21 @@ const Users = () => {
           <Table>
             <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
               <TableRow>
-                <TableCell><strong>#</strong></TableCell>
-                <TableCell><strong>Name</strong></TableCell>
-                <TableCell><strong>Email</strong></TableCell>
-                <TableCell><strong>Created</strong></TableCell>
-                <TableCell><strong>Delete</strong></TableCell>
+                <TableCell>
+                  <strong>#</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Name</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Email</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Created</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Delete</strong>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

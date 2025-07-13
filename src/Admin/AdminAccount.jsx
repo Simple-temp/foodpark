@@ -39,7 +39,7 @@ const AdminAccount = () => {
       if (userInfo?._id && userInfo?.token) {
         try {
           const res = await axios.get(
-            `http://localhost:3000/api/user/userbyid/${userInfo._id}`,
+            `http://localhost:4000/api/user/userbyid/${userInfo._id}`,
             {
               headers: {
                 Authorization: `Bearer ${userInfo.token}`,
@@ -93,7 +93,7 @@ const AdminAccount = () => {
       }
 
       const res = await axios.put(
-        `http://localhost:3000/api/user/userbyid/${userInfo._id}`,
+        `http://localhost:4000/api/user/userbyid/${userInfo._id}`,
         payload,
         {
           headers: {

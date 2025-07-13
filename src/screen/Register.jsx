@@ -46,7 +46,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const { data } = await axios.post(
-        "http://localhost:3000/api/user/register",
+        "http://localhost:4000/api/user/register",
         form
       );
       localStorage.setItem("userInfo", JSON.stringify(data)); // ✅ Save user data to localStorage

@@ -43,7 +43,7 @@ const MySettings = () => {
     try {
       // Step 1: Get user orders
       const orderRes = await axios.get(
-        "http://localhost:3000/api/order/getorders/my",
+        "http://localhost:4000/api/order/getorders/my",
         {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
@@ -52,13 +52,15 @@ const MySettings = () => {
       );
 
       if (orderRes.data.length > 0) {
-        toast.error("You must delete all your orders before deleting your account.");
+        toast.error(
+          "You must delete all your orders before deleting your account."
+        );
         return;
       }
 
       // Step 2: Delete account
       const deleteRes = await axios.delete(
-        `http://localhost:3000/api/user/userbyid/${userInfo._id}`,
+        `http://localhost:4000/api/user/userbyid/${userInfo._id}`,
         {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
@@ -85,7 +87,7 @@ const MySettings = () => {
         Account Deletion
       </Typography>
 
-       <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={3000} />
 
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="body1" mb={2}>

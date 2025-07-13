@@ -39,7 +39,7 @@ const MyOrder = () => {
     const fetchOrders = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:3000/api/order/getorders/my",
+          "http://localhost:4000/api/order/getorders/my",
           {
             headers: { Authorization: `Bearer ${userInfo.token}` },
           }
@@ -56,7 +56,7 @@ const MyOrder = () => {
   const handleOpenDetails = async (orderId) => {
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/order/orderbyid/${orderId}`,
+        `http://localhost:4000/api/order/orderbyid/${orderId}`,
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }
@@ -79,7 +79,7 @@ const MyOrder = () => {
 
     try {
       await axios.delete(
-        `http://localhost:3000/api/order/deleteorder/${orderId}`,
+        `http://localhost:4000/api/order/deleteorder/${orderId}`,
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }

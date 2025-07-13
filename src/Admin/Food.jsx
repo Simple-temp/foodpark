@@ -20,7 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://localhost:4000";
 
 const Food = () => {
   const [foods, setFoods] = useState([]);

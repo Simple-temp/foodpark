@@ -37,7 +37,7 @@ const ContactSection = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:3000/api/messages", form);
+      const res = await axios.post("http://localhost:4000/api/messages", form);
       setSuccess(res.data.message || "Message sent successfully!");
       setForm({ name: "", email: "", phone: "", message: "" });
     } catch (err) {
@@ -73,12 +73,12 @@ const ContactSection = () => {
             alignItems="center"
           >
             {success && (
-              <Alert severity="success"  sx={{ width: 800, mb:2 }}>
+              <Alert severity="success" sx={{ width: 800, mb: 2 }}>
                 {success}
               </Alert>
             )}
             {error && (
-              <Alert severity="error"  sx={{ width: 800, mb:2 }}>
+              <Alert severity="error" sx={{ width: 800, mb: 2 }}>
                 {error}
               </Alert>
             )}
@@ -121,7 +121,7 @@ const ContactSection = () => {
               color="primary"
               type="submit"
               disabled={loading}
-               sx={{ width: 800, mb:2 }}
+              sx={{ width: 800, mb: 2 }}
             >
               {loading ? (
                 <CircularProgress size={24} color="inherit" />

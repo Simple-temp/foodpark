@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -7,29 +7,26 @@ import {
   CardMedia,
   CardContent,
 } from "@mui/material";
+import axios from "axios";
 
-const blogPosts = [
-  {
-    title: "A Taste of Orchard",
-    description: "Explore the elegant flavors at the Orchard Hotel restaurant.",
-    image:
-      "https://www.orchardhotel.com.au/wp-content/uploads/2024/10/The-Orchard-Hotel-Chatswood-Restaurant-Bar-48.jpg",
-  },
-  {
-    title: "Fast Food Feast",
-    description: "A top-down look at the ultimate fast food mix platter.",
-    image:
-      "https://img.freepik.com/free-photo/top-view-fast-food-mix-mozzarella-sticks-club-sandwich-hamburger-mushroom-pizza-caesar-shrimp-salad-french-fries-ketchup-mayo-cheese-sauces-table_141793-3998.jpg?semt=ais_hybrid&w=740",
-  },
-  {
-    title: "Healthy Eating",
-    description: "Understanding food groups for a balanced diet.",
-    image:
-      "https://www.eatright.org/-/media/images/eatright-landing-pages/foodgroupslp_804x482.jpg?as=0&w=967&rev=d0d1ce321d944bbe82024fff81c938e7&hash=E6474C8EFC5BE5F0DA9C32D4A797D10D",
-  },
-];
+const BASE_URL = "http://localhost:4000";
 
 const BlogSection = () => {
+  const [blogPosts, setBlogPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/blog/getallblog`);
+        setBlogPosts(response.data);
+      } catch (error) {
+        console.error("Failed to fetch blogs:", error);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
   return (
     <div className="earch-container">
       <Box textAlign="center" px={2}>
@@ -42,14 +39,18 @@ const BlogSection = () => {
 
         <Grid container spacing={4} mt={2}>
           {blogPosts.map((post, i) => (
-            <Grid item xs={12} sm={6} md={4} key={i}>
+            <Grid item xs={12} sm={6} md={4} key={post._id || i}>
               <Card sx={{ height: "100%" }}>
                 <CardMedia
                   component="img"
-                  image={post.image}
+                  image={
+                    post.image?.startsWith("http")
+                      ? post.image
+                      : `${BASE_URL}/uploads/${post.image}`
+                  }
                   alt={post.title}
                   sx={{
-                    height: 200,
+                    height: 340,
                     objectFit: "cover",
                   }}
                 />

@@ -37,7 +37,7 @@ const Myprofile = () => {
   useEffect(() => {
     if (userInfo?._id && userInfo?.token) {
       axios
-        .get(`http://localhost:3000/api/user/userbyid/${userInfo._id}`, {
+        .get(`http://localhost:4000/api/user/userbyid/${userInfo._id}`, {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
           },
@@ -86,7 +86,7 @@ const Myprofile = () => {
       };
 
       const res = await axios.put(
-        `http://localhost:3000/api/user/userbyid/${userInfo._id}`,
+        `http://localhost:4000/api/user/userbyid/${userInfo._id}`,
         updatePayload,
         {
           headers: {

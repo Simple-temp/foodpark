@@ -22,7 +22,7 @@ const Messages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/messages");
+        const res = await axios.get("http://localhost:4000/api/messages");
         setMessages(res.data);
       } catch (err) {
         console.error("Failed to fetch messages", err);
@@ -35,10 +35,12 @@ const Messages = () => {
 
   // ✅ Delete message by ID
   const handleDelete = async (id) => {
-    const confirm = window.confirm("Are you sure you want to delete this message?");
+    const confirm = window.confirm(
+      "Are you sure you want to delete this message?"
+    );
     if (confirm) {
       try {
-        await axios.delete(`http://localhost:3000/api/messages/${id}`);
+        await axios.delete(`http://localhost:4000/api/messages/${id}`);
         setMessages((prev) => prev.filter((msg) => msg._id !== id));
       } catch (err) {
         console.error("Failed to delete message", err);
@@ -88,7 +90,10 @@ const Messages = () => {
                     })}
                   </TableCell>
                   <TableCell>
-                    <IconButton color="error" onClick={() => handleDelete(msg._id)}>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(msg._id)}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>

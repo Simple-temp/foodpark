@@ -4,7 +4,7 @@ import Carousel from "react-material-ui-carousel";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000"; // adjust if needed
+const BASE_URL = "http://localhost:4000"; // adjust if needed
 
 // Split array into chunks of `size` (e.g., 4 items per slide)
 const chunkRecipes = (arr, size) => {

@@ -37,7 +37,7 @@ const AllOrder = () => {
 
       try {
         const { data } = await axios.get(
-          "http://localhost:3000/api/order/getorders",
+          "http://localhost:4000/api/order/getorders",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -59,7 +59,7 @@ const AllOrder = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/order/orderbyid/${order._id}`,
+        `http://localhost:4000/api/order/orderbyid/${order._id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -85,7 +85,7 @@ const AllOrder = () => {
 
     try {
       await axios.delete(
-        `http://localhost:3000/api/order/deleteorder/${orderId}`,
+        `http://localhost:4000/api/order/deleteorder/${orderId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

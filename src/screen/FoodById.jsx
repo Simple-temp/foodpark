@@ -4,7 +4,7 @@ import { Box, Typography, Button, TextField, Rating } from "@mui/material";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000"; // adjust if needed
+const BASE_URL = "http://localhost:4000"; // adjust if needed
 
 const FoodReviewSection = ({ foodId, userInfo }) => {
   const [rating, setRating] = useState(4);

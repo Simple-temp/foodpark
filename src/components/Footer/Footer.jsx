@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Alert,
-} from "@mui/material";
+import { Box, Typography, TextField, Button, Alert } from "@mui/material";
 import CopyrightIcon from "@mui/icons-material/Copyright";
 import axios from "axios";
 
@@ -24,7 +18,7 @@ const Footer = () => {
     }
 
     try {
-      const res = await axios.post("http://localhost:3000/api/newsletter", {
+      const res = await axios.post("http://localhost:4000/api/newsletter", {
         email,
       });
       setSuccess(res.data.message);

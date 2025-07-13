@@ -24,7 +24,7 @@ const MyHistory = () => {
     const fetchPaidOrders = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:3000/api/order/getorders/my",
+          "http://localhost:4000/api/order/getorders/my",
           {
             headers: {
               Authorization: `Bearer ${userInfo.token}`,

@@ -29,7 +29,7 @@ const Cart = () => {
   useEffect(() => {
     const fetchCoupon = async () => {
       try {
-        const { data } = await axios.get("http://localhost:3000/api/cupon");
+        const { data } = await axios.get("http://localhost:4000/api/cupon");
         setCouponData(data);
       } catch (error) {
         console.error("Coupon not found");

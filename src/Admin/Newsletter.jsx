@@ -19,11 +19,11 @@ const Newsletter = () => {
   useEffect(() => {
     const fetchSubscribers = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/newsletter");
+        const res = await axios.get("http://localhost:4000/api/newsletter");
         setSubscribers(res.data); // assuming your API returns an array
       } catch (err) {
         setError("Failed to fetch newsletter data.");
-        console.log(err)
+        console.log(err);
       } finally {
         setLoading(false);
       }
@@ -47,7 +47,14 @@ const Newsletter = () => {
       ) : (
         <Grid container spacing={2}>
           {subscribers.map((subscriber, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={subscriber._id || index}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              lg={3}
+              key={subscriber._id || index}
+            >
               <Card sx={{ display: "flex", alignItems: "center", p: 2 }}>
                 <Avatar
                   alt="Subscriber"
@@ -57,7 +64,8 @@ const Newsletter = () => {
                 <CardContent>
                   <Typography variant="body1">{subscriber.email}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Subscribed: {new Date(subscriber.createdAt).toLocaleDateString()}
+                    Subscribed:{" "}
+                    {new Date(subscriber.createdAt).toLocaleDateString()}
                   </Typography>
                 </CardContent>
               </Card>

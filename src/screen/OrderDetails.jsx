@@ -24,7 +24,7 @@ const OrderDetails = () => {
   useEffect(() => {
     const fetchCupon = async () => {
       try {
-        const { data } = await axios.get("http://localhost:3000/api/cupon");
+        const { data } = await axios.get("http://localhost:4000/api/cupon");
         setCuponData(data);
       } catch (err) {
         console.warn("No coupon data found");
@@ -222,12 +222,12 @@ const OrderDetails = () => {
                   };
 
                   const response = await axios.post(
-                    "http://localhost:3000/api/order/neworder",
+                    "http://localhost:4000/api/order/neworder",
                     orderData,
                     config
                   );
 
-                  console.log(orderData)
+                  console.log(orderData);
 
                   const orderId = response.data._id;
 

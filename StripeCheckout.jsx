@@ -1,10 +1,6 @@
 // StripeCheckout.jsx
 import React, { useEffect, useState } from "react";
-import {
-  CardElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Box, Button, Typography } from "@mui/material";
 import axios from "axios";
 
@@ -25,7 +21,7 @@ const StripeCheckout = ({ amount, orderId, onSuccess }) => {
       };
 
       const { data } = await axios.post(
-        "http://localhost:3000/api/stripe/create-payment-intent",
+        "http://localhost:4000/api/stripe/create-payment-intent",
         { amount },
         config
       );
@@ -55,11 +51,13 @@ const StripeCheckout = ({ amount, orderId, onSuccess }) => {
       alert(error.message);
     } else if (paymentIntent.status === "succeeded") {
       await axios.put(
-        `http://localhost:3000/api/order/pay/${orderId}`,
+        `http://localhost:4000/api/order/pay/${orderId}`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${JSON.parse(localStorage.getItem("userInfo")).token}`,
+            Authorization: `Bearer ${
+              JSON.parse(localStorage.getItem("userInfo")).token
+            }`,
           },
         }
       );
@@ -71,7 +69,12 @@ const StripeCheckout = ({ amount, orderId, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit}>
       <CardElement />
-      <Button type="submit" variant="contained" disabled={!stripe} sx={{ mt: 2 }}>
+      <Button
+        type="submit"
+        variant="contained"
+        disabled={!stripe}
+        sx={{ mt: 2 }}
+      >
         Pay Now
       </Button>
     </form>

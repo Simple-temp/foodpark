@@ -17,7 +17,7 @@ const Cupons = () => {
   useEffect(() => {
     const fetchCoupon = async () => {
       try {
-        const { data } = await axios.get("http://localhost:3000/api/cupon");
+        const { data } = await axios.get("http://localhost:4000/api/cupon");
         setFormData({
           cupon: data.cupon,
           discount: data.discount,
@@ -39,7 +39,7 @@ const Cupons = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = "http://localhost:3000/api/cupon";
+      const url = "http://localhost:4000/api/cupon";
       if (isExisting) {
         await axios.put(url, formData);
         toast.success("Coupon updated successfully!");
