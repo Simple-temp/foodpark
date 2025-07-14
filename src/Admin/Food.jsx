@@ -24,6 +24,14 @@ const BASE_URL = "http://localhost:4000";
 
 const Food = () => {
   const [foods, setFoods] = useState([]);
+  const brandOptions = ["Nestlé", "Lay's", "KFC", "Amul", "Barilla"];
+  const categoryOptions = [
+    "Packaged Foods & Beverages",
+    "Snacks (Potato Chips)",
+    "Fast Food (Fried Chicken)",
+    "Dairy Products",
+    "Pasta & Italian Foods",
+  ];
 
   // Add Food dialog state
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -35,7 +43,10 @@ const Food = () => {
     rating: "",
     review: "",
     stock: "",
+    brand: "",
+    category: "",
   });
+
   const [imageFile, setImageFile] = useState(null);
 
   // Edit Food dialog state
@@ -87,6 +98,8 @@ const Food = () => {
         rating: "",
         review: "",
         stock: "",
+        category :"",
+        brand :"",
       });
       setImageFile(null);
       fetchFoods();
@@ -123,6 +136,8 @@ const Food = () => {
       formData.append("rating", editFood.rating);
       formData.append("review", editFood.review);
       formData.append("stock", editFood.stock);
+      formData.append("brand", editFood.brand);
+      formData.append("category", editFood.category);
 
       // If new image uploaded
       if (editFood.imgFile) {
@@ -160,7 +175,12 @@ const Food = () => {
 
   return (
     <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Food Items</Typography>
         <Button
           variant="contained"
@@ -174,14 +194,25 @@ const Food = () => {
       <Grid container spacing={3}>
         {foods.map((item) => (
           <Grid item xs={12} sm={6} md={4} key={item._id}>
-            <Card sx={{ height: 495, width:400, display: "flex", flexDirection: "column", borderRadius: "5%" }}>
+            <Card
+              sx={{
+                height: 495,
+                width: 400,
+                display: "flex",
+                flexDirection: "column",
+                borderRadius: "5%",
+              }}
+            >
               <CardMedia
                 component="img"
                 height="200"
                 image={
                   item.img?.startsWith("http")
                     ? item.img
-                    : `${BASE_URL}/uploads/${item.img.replace(/^\/uploads\/?/, "")}`
+                    : `${BASE_URL}/uploads/${item.img.replace(
+                        /^\/uploads\/?/,
+                        ""
+                      )}`
                 }
                 alt={item.name}
               />
@@ -192,11 +223,17 @@ const Food = () => {
                 <Typography>Rating: {item.rating}</Typography>
                 <Typography>Review: {item.review}</Typography>
                 <Typography>Stock: {item.stock}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 1 }}
+                >
                   {item.des}
                 </Typography>
               </CardContent>
-              <Box sx={{ display: "flex", justifyContent: "space-around", mb: 1 }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-around", mb: 1 }}
+              >
                 <Button
                   size="small"
                   variant="outlined"
@@ -227,18 +264,112 @@ const Food = () => {
       >
         <DialogTitle>Add New Food</DialogTitle>
         <DialogContent>
-          <TextField fullWidth margin="dense" label="Name" name="name" onChange={handleAddChange} />
-          <TextField fullWidth margin="dense" label="Quantity" name="quantity" type="number" onChange={handleAddChange} />
-          <TextField fullWidth margin="dense" label="Price" name="price" type="number" onChange={handleAddChange} />
-          <TextField fullWidth margin="dense" label="Description" name="des" onChange={handleAddChange} />
-          <TextField fullWidth margin="dense" label="Rating" name="rating" type="number" onChange={handleAddChange} />
-          <TextField fullWidth margin="dense" label="Review" name="review" type="number" onChange={handleAddChange} />
-          <TextField fullWidth margin="dense" label="Stock" name="stock" type="number" onChange={handleAddChange} />
-          <Input fullWidth type="file" onChange={handleAddImageChange} sx={{ mt: 2 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Name"
+                name="name"
+                onChange={handleAddChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Quantity"
+                name="quantity"
+                type="number"
+                onChange={handleAddChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Price"
+                name="price"
+                type="number"
+                onChange={handleAddChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Stock"
+                name="stock"
+                type="number"
+                onChange={handleAddChange}
+              />
+              <TextField
+                fullWidth
+                select
+                margin="dense"
+                label="Brand"
+                name="brand"
+                value={newFood.brand}
+                onChange={handleAddChange}
+                SelectProps={{ native: true }}
+              >
+                <option value=""></option>
+                {brandOptions.map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Description"
+                name="des"
+                onChange={handleAddChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Rating"
+                name="rating"
+                type="number"
+                onChange={handleAddChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Review"
+                name="review"
+                type="number"
+                onChange={handleAddChange}
+              />
+              <TextField
+                fullWidth
+                select
+                margin="dense"
+                label="Category"
+                name="category"
+                value={newFood.category}
+                onChange={handleAddChange}
+                SelectProps={{ native: true }}
+              >
+                <option value=""></option>
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </TextField>
+              <Input
+                fullWidth
+                type="file"
+                onChange={handleAddImageChange}
+                sx={{ mt: 2 }}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenAddDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleAddFood}>Add</Button>
+          <Button variant="contained" onClick={handleAddFood}>
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -252,80 +383,120 @@ const Food = () => {
         <DialogTitle>Update Food Item</DialogTitle>
         <DialogContent>
           {editFood && (
-            <>
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Name"
-                name="name"
-                value={editFood.name}
-                onChange={handleEditChange}
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Quantity"
-                name="quantity"
-                type="number"
-                value={editFood.quantity}
-                onChange={handleEditChange}
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Price"
-                name="price"
-                type="number"
-                value={editFood.price}
-                onChange={handleEditChange}
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Description"
-                name="des"
-                value={editFood.des}
-                onChange={handleEditChange}
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Rating"
-                name="rating"
-                type="number"
-                value={editFood.rating}
-                onChange={handleEditChange}
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Review"
-                name="review"
-                type="number"
-                value={editFood.review}
-                onChange={handleEditChange}
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Stock"
-                name="stock"
-                type="number"
-                value={editFood.stock}
-                onChange={handleEditChange}
-              />
-              <Input
-                fullWidth
-                type="file"
-                onChange={handleEditImageChange}
-                sx={{ mt: 2 }}
-              />
-            </>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Name"
+                  name="name"
+                  value={editFood.name}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Quantity"
+                  name="quantity"
+                  type="number"
+                  value={editFood.quantity}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Price"
+                  name="price"
+                  type="number"
+                  value={editFood.price}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Stock"
+                  name="stock"
+                  type="number"
+                  value={editFood.stock}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  fullWidth
+                  select
+                  margin="dense"
+                  label="Brand"
+                  name="brand"
+                  value={editFood.brand}
+                  onChange={handleEditChange}
+                  SelectProps={{ native: true }}
+                >
+                  <option value=""></option>
+                  {brandOptions.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Description"
+                  name="des"
+                  value={editFood.des}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Rating"
+                  name="rating"
+                  type="number"
+                  value={editFood.rating}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Review"
+                  name="review"
+                  type="number"
+                  value={editFood.review}
+                  onChange={handleEditChange}
+                />
+                <TextField
+                  fullWidth
+                  select
+                  margin="dense"
+                  label="Category"
+                  name="category"
+                  value={editFood.category}
+                  onChange={handleEditChange}
+                  SelectProps={{ native: true }}
+                >
+                  <option value=""></option>
+                  {categoryOptions.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </TextField>
+                <Input
+                  fullWidth
+                  type="file"
+                  onChange={handleEditImageChange}
+                  sx={{ mt: 2 }}
+                />
+              </Grid>
+            </Grid>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleUpdateFood}>Update</Button>
+          <Button variant="contained" onClick={handleUpdateFood}>
+            Update
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

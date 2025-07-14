@@ -42,6 +42,7 @@ import Cupons from "./Admin/Cupons";
 import Slides from "./Admin/Slides";
 import ProtectedRoute from "./ProtectedRoute";
 import OrderDetailsById from "./screen/OrderDetailsById";
+import SearchFilterBox from "./components/SearchFilterBox/SearchFilterBox";
 
 const AppContent = () => {
   const location = useLocation();
@@ -78,7 +79,7 @@ const AppContent = () => {
         <Box mt={shouldHideHeaderFooter ? 0 : 10}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/our-recipes" element={<OurRecipes />} />
+            <Route path="/our-recipes" element={<SearchFilterBox />} />
             <Route path="/about-us" element={<AboutSection />} />
             <Route path="/blog" element={<BlogSection />} />
             <Route path="/client-feedback" element={<ClientSection />} />
