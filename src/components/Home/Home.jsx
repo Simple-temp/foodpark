@@ -4,12 +4,14 @@ import AboutSection from "../AboutSection/AboutSection";
 import BlogSection from "../BlogSection/BlogSection";
 import ClientSection from "../ClientSection/ClientSection";
 import ContactSection from "../ContactSection/ContactSection";
+import TryAI from "../../TryAI";
 
 const Home = () => {
   return (
     <>
       <div>
         <div className="container-width">
+          <TryAI/>
           <HeroCarousel />
           <OurRecipes />
           <AboutSection />

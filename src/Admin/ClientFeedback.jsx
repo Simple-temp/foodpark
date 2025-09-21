@@ -63,7 +63,7 @@ const ClientFeedback = () => {
             <TableRow key={r._id}>
               <TableCell>{r.name}</TableCell>
               <TableCell>
-                <Avatar
+                {/* <Avatar
                   src={
                     r.foodid?.img?.startsWith("http")
                       ? r.foodid.img
@@ -75,7 +75,7 @@ const ClientFeedback = () => {
                     height: 80,
                     borderRadius: "50%",
                   }}
-                />
+                /> */}
               </TableCell>
               <TableCell>{r.foodid?.name || "N/A"}</TableCell>
               <TableCell>{r.message}</TableCell>
